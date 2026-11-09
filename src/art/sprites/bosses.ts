@@ -57,38 +57,44 @@ export function parisFrame(pose: Pose): PixelBuffer {
 }
 
 /**
- * Chariot (side view, facing left once mirrored): an ink horse, a wicker car
- * on one big four-spoke wheel, and a wine-clad driver. 24x32 cell.
+ * Chariot (side view, facing left once mirrored), 32x40 like Hector: a
+ * full-size Trojan driver standing in a wine car on a big four-spoke wheel,
+ * drawn by a Geometric stick horse in ink, exactly as horses stand on
+ * Geometric kraters: long neck, thin barrel, stick legs.
  */
+const driverSpec: FigureSpec = {
+  skin: C.skin, tunic: C.wine, tunicDk: C.wineDk, metal: C.iron, metalDk: C.ironDk, metalHi: C.iron,
+  crest: C.purple, emblem: C.purple, outline: C.ink, headgear: 'crest', shield: 'none', weapon: 'spear',
+};
+
 export function chariotFrame(pose: Pose): PixelBuffer {
-  const b = new PixelBuffer(24, 32);
+  const b = new PixelBuffer(BOSS_W, BOSS_H);
   const lunge = pose === 'strike' ? 2 : pose === 'windup' ? -1 : 0;
   const bob = pose === 'idle1' ? 1 : 0;
-  // horse (black-figure silhouette) in front, to the right before mirroring
-  const hx = 14 + lunge;
-  b.rect(hx, 19 + bob, 7, 4, C.ink); // body
-  b.triangle(hx + 6, 19 + bob, hx + 9, 13 + bob, hx + 9, 20 + bob, C.ink); // neck
-  b.rect(hx + 8, 13 + bob, 3, 2, C.ink); // head
-  b.set(hx + 7, 12 + bob, C.ink); // ear
-  for (const lx of [hx, hx + 2, hx + 5, hx + 6]) b.vline(lx, 23, 6 - (pose === 'idle1' && lx % 2 === 0 ? 1 : 0), C.ink); // legs
-    // car
-  b.rect(4, 17, 9, 6, C.umber);
-  b.hline(4, 17, 9, C.darkUmber);
-  for (let x = 5; x < 13; x += 2) b.vline(x, 18, 4, C.darkUmber);
-  b.hline(12, 21, hx - 12 + 1, C.umber); // pole to the horse
+  // driver: the standard warrior, cut at the hips, standing in the car
+  const driver = drawFigure(driverSpec, pose === 'strike' ? 'strike' : pose === 'windup' ? 'windup' : 'idle0').crop(0, 0, 24, 23);
+  b.blit(driver, 0, 2 + bob);
+  // horse, in front (right, before mirroring)
+  const hx = 17 + lunge;
+  b.rect(hx, 22, 10, 3, C.ink); // barrel
+  b.triangle(hx + 7, 23, hx + 10, 12, hx + 12, 23, C.ink); // long neck
+  b.rect(hx + 10, 11, 4, 3, C.ink); // head
+  b.set(hx + 11, 10, C.ink); // ear
+  b.line(hx, 22, hx - 2, 28, C.ink); // tail
+  const step = pose === 'idle1' ? 1 : 0;
+  for (const [lx, d] of [[hx + 1, 0], [hx + 3, step], [hx + 8, step], [hx + 10, 0]] as const) b.vline(lx + d, 25, 12, C.ink); // stick legs
+  // car and pole
+  b.rect(2, 23, 14, 8, C.wineDk);
+  b.hline(2, 23, 14, C.ink);
+  for (let x = 4; x < 16; x += 3) b.vline(x, 24, 7, C.ink);
+  b.hline(15, 27, hx - 15 + 2, C.ink); // pole
+  b.line(18 + lunge, 15 + bob, hx + 11, 13, C.ironDk); // reins
   // wheel
-  b.circle(8, 25, 4, C.ink);
-  b.circle(8, 25, 3, C.umber);
-  b.hline(5, 25, 7, C.ink);
-  b.vline(8, 22, 7, C.ink);
-  b.set(8, 25, C.bronze);
-  // driver
-  b.rect(7, 11 + bob, 4, 6, C.wine);
-    b.circle(9, 8 + bob, 2, C.skin);
-  b.halfCircle(9, 7 + bob, 2, C.iron);
-  b.set(9, 4 + bob, C.purple).set(8, 4 + bob, C.purple).set(10, 5 + bob, C.purple);
-  b.hline(10, 13 + bob, 5 + lunge, C.skin); // arms holding the reins
-  b.line(14 + lunge, 13 + bob, hx + 8, 15 + bob, C.bronze); // reins
+  b.circle(9, 33, 6, C.ink);
+  b.circle(9, 33, 4, C.ironDk);
+  b.hline(4, 33, 11, C.ink);
+  b.vline(9, 28, 11, C.ink);
+  b.set(9, 33, C.iron);
   return b.outlined(C.ink).flipped();
 }
 

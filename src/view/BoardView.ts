@@ -150,7 +150,7 @@ export class BoardView {
   spriteOrigin(type: string, x: number, y: number): { px: number; py: number } {
     if (type === 'ship') return this.shipOrigin(x, y);
     const o = unitOrigin(this.layout, x, y);
-    return type === 'hector' ? { px: o.px - 4, py: o.py - 8 } : o;
+    return type === 'hector' || type === 'chariot' ? { px: o.px - 4, py: o.py - 8 } : o;
   }
 
   shipOrigin(x: number, y: number): { px: number; py: number } {
