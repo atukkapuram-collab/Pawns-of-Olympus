@@ -27,6 +27,7 @@ test('gallery', async ({ page }) => {
 });
 
 test('game screens', async ({ page }) => {
+  test.setTimeout(240_000);
   // 640x360 viewport -> exactly 2x scale for the 2x captures
   await page.setViewportSize({ width: 640, height: 360 });
   await page.goto('./');
@@ -34,7 +35,22 @@ test('game screens', async ({ page }) => {
   await page.waitForTimeout(300);
   await shoot(page, 'title');
 
-  for (const id of ['a1-01', 'a1-02', 'a1-03']) {
+  // menu screens, reached directly through the scene manager
+  const go = async (key: string, data: object, name: string) => {
+    await page.evaluate(() => { const g = window.__POO__!.game; for (const s of g.scene.getScenes(true)) s.scene.stop(); });
+    await page.waitForTimeout(80);
+    await page.evaluate(([k, d]) => window.__POO__!.game.scene.start(k as string, d as object), [key, data] as const);
+    await page.waitForTimeout(450);
+    await shoot(page, name);
+  };
+  await go('LevelSelect', { act: 1 }, 'levelselect-act1');
+  await go('Patron', { levelId: 'a1-03' }, 'patron');
+  await go('Cutscene', { kind: 'act', act: 1, then: { scene: 'Title' } }, 'cutscene-act1');
+  await go('Cutscene', { kind: 'pre', act: 1, levelId: 'a1-05', then: { scene: 'Title' } }, 'cutscene-pre');
+  await go('Settings', { back: 'Title' }, 'settings');
+  await go('Credits', {}, 'credits');
+
+  for (const id of ['a1-01', 'a1-02', 'a1-03', 'a1-04', 'a1-05']) {
     await page.evaluate((l) => window.__POO__!.startLevel(l), id);
     await waitScene(page, 'Battle');
     await settle(page);

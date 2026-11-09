@@ -144,6 +144,17 @@ export class CutsceneScene extends Phaser.Scene {
     const ground = H - 10;
     zigzagBand(b, 0, ground + 4, W, 4, C.ink);
     b.hline(0, ground + 1, W, C.ink);
+    // a far frieze of hills (Acts I-II) or walls (Act III) behind the figures
+    if (this.data0.act === 3) {
+      for (let x = 0; x < W; x += 12) { b.rect(x, 30, 10, ground - 30, C.deepClay); b.rect(x + 1, 27, 3, 3, C.deepClay); b.rect(x + 6, 27, 3, 3, C.deepClay); }
+    } else if (this.data0.act === 1) {
+      for (let x = -8; x < W; x += 16) b.triangle(x, ground - 6, x + 8, ground - 14, x + 16, ground - 6, C.deepClay);
+      b.rect(0, ground - 6, W, 6, C.deepClay);
+    } else {
+      b.triangle(-20, ground, 60, ground - 34, 140, ground, C.deepClay);
+      b.triangle(150, ground, 230, ground - 28, 310, ground, C.deepClay);
+    }
+    b.hline(0, ground + 1, W, C.ink);
 
     if (speaker && GODS[speaker]) {
       // a god speaks: portrait in a frame, the mortals small beneath

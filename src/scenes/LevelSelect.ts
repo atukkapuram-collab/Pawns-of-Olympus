@@ -40,6 +40,7 @@ function vase(): PixelBuffer {
   // foot
   b.rect(124, 166, 72, 8, C.ink);
   b.rect(126, 166, 68, 6, C.clay);
+  b.ditherFill(236, 60, 60, 108, C.deepClay, 4, true);
   // shoulder and lower bands
   meanderBand(b, 44, 40, 232, C.ink);
   zigzagBand(b, 40, 124, 240, 4, C.ink);
@@ -49,8 +50,6 @@ function vase(): PixelBuffer {
   b.rect(30, 56, 260, 64, C.ink);
   b.hline(30, 57, 260, C.deepClay);
   b.hline(30, 118, 260, C.deepClay);
-  // shading on the right of the belly, in dither (never a gradient)
-  b.ditherFill(230, 60, 64, 100, C.deepClay, 4, true);
   return b;
 }
 
@@ -180,11 +179,11 @@ export class LevelSelectScene extends Phaser.Scene {
     // info tablet under the frieze
     const l = levels[this.selected]!;
     const open = isUnlocked(l.id);
-    const tab = this.add.image(60, 134, ensureTexture(this, 'ls|tab', () => panel(200, 30, 'cream'))).setOrigin(0, 0);
+    const tab = this.add.image(40, 132, ensureTexture(this, 'ls|tab2', () => panel(240, 38, 'cream'))).setOrigin(0, 0);
     this.items.push(tab);
-    this.items.push(addText(this, 66, 139, `${l.index}. ${l.title}`, C.ink));
-    this.items.push(addText(this, 66, 149, open ? l.teaches : 'Unpainted. Win the one before.', C.umber, { maxWidth: 140 }));
-    const play = addButton(this, 212, 146, 42, 13, 'Play', () => this.play(), 'E');
+    this.items.push(addText(this, 46, 136, `${l.index}. ${l.title}`, C.ink));
+    this.items.push(addText(this, 46, 146, open ? l.teaches : 'Unpainted clay. Win the one before.', C.umber, { maxWidth: 176 }));
+    const play = addButton(this, 228, 150, 46, 14, 'Play', () => this.play(), 'E');
     play.setEnabled(open);
     this.items.push(play.img);
   }

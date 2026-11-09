@@ -13,9 +13,9 @@ import { addButton, addText, type PixelButton } from '../view/ui';
 import { sfx } from '../audio/sfx';
 
 export const FAVOR_LINE: Record<PatronId, string> = {
-  zeus: 'Bolt: 2 damage to one tile.',
-  athena: 'A hero who acted acts again.',
-  poseidon: 'A wave shoves a whole row.',
+  zeus: 'Bolt: 2 damage, one tile.',
+  athena: 'A spent hero acts again.',
+  poseidon: 'A wave shoves one row.',
 };
 
 export class PatronScene extends Phaser.Scene {
