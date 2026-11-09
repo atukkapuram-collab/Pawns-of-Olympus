@@ -1,18 +1,15 @@
 # Progress
 
 ## Done
-- M0 setup, M2 rules engine (63 tests), M3 playable slice (e2e wins L1 through the UI, desktop + touch).
-- M1 art: two review rounds applied (see PLAYTEST_LOG). M4 cast art: Hector, Paris, chariot; portraits for all 6 gods; Poseidon/Athena favor UI; ability toggle; mist marker.
-- QA round 1: 11 of 12 bugs fixed (BUG-4 patron picker fixed by M6 Patron screen).
-- Act I complete: a1-01..a1-05 validate.
-- M6 screens: campaign flow (src/game/flow.ts), Cutscene (act intros + pre/post scenes), Patron select, amphora Level select, Settings, Pause (Esc/P), Credits; save of stars and seen scenes; lettered title screen with marching frieze.
-- Story text for all 15 levels + god banter + epigraphs (lore-keeper), credited in CREDITS.md.
-- M7 partial: SFX synth, music sequencer (Greek modes, per act), god manifestations with banter, pottery shatter, hit-stop, shake.
+- M0–M7 accepted (see ROADMAP). Full 15-level campaign validates (solutions replay to a win within par, none winnable in one turn); every level also replays in the browser (e2e/levels.spec.ts).
+- `npm run check` green with all 15 levels (66 unit tests, 13 e2e incl. desktop + touch UI wins, flow, persistence, pause, portrait overlay).
+- Style reviews rounds 1–3 applied (PLAYTEST_LOG). Night palette applies to Greeks only; stealth sight overlay; chariot redrawn.
+- Docs current: GDD, STYLE_GUIDE, LEVELS (pars), STORY, UI_UX, AUDIO, ANIMATION, ARCHITECTURE, WORKFLOW (publishing steps), DECISIONS (30 entries).
 
 ## In progress
-- Acts II and III levels being designed by two level-designer agents (src/data/levels/a2-0*.json, a3-0*.json are uncommitted WIP until they report back and validate).
+- QA round 2 (qa-tester agent) on the whole game; files bugs from BUG-13 in docs/BUGS.md.
 
 ## Next exact step
-1. When the level agents report: run `npm run validate-levels`, fix/adjust, commit Acts II-III, fill pars in docs/LEVELS.md.
-2. e2e for save persisting across reload + settings persisting (M6 acceptance).
-3. Touch portrait "turn your device" overlay; style review round 3 and QA round 2; M8 polish; M9 hardening; M10 morning report.
+1. Fix QA round 2 bugs; re-run `npm run check`.
+2. M8 polish pass on the weakest screens; M9 hardening (static build from dist, package:itch check).
+3. M10: write docs/MORNING_REPORT.md and mark FINAL when check passes and ROADMAP is all checked.
