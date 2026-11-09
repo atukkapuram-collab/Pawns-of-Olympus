@@ -34,13 +34,15 @@ function hemMeander(b: PixelBuffer, x0: number, x1: number, y: number): void {
   b.hline(x0, y + 3, x1 - x0 + 1, C.bronze);
 }
 
-export function drawGodPortrait(g: GodSpec): PixelBuffer {
+export function drawGodPortrait(g: GodSpec, bare = false): PixelBuffer {
   const b = new PixelBuffer(PORTRAIT_W, PORTRAIT_H);
-  // panel background: flat field with a dithered lower band (never a gradient)
-  b.rect(0, 0, PORTRAIT_W, PORTRAIT_H, g.bg);
-  b.ditherFill(0, 30, PORTRAIT_W, 6, g.bgLow, 4);
-  b.ditherFill(0, 36, PORTRAIT_W, 6, g.bgLow, 10);
-  b.rect(0, 42, PORTRAIT_W, 14, g.bgLow);
+  if (!bare) {
+    // panel background: flat field with a dithered lower band (never a gradient)
+    b.rect(0, 0, PORTRAIT_W, PORTRAIT_H, g.bg);
+    b.ditherFill(0, 30, PORTRAIT_W, 6, g.bgLow, 4);
+    b.ditherFill(0, 36, PORTRAIT_W, 6, g.bgLow, 10);
+    b.rect(0, 42, PORTRAIT_W, 14, g.bgLow);
+  }
   // halo: solid inner band, dithered outer rings
   b.ditherRing(24, 13, 9, 17, g.halo, [16, 6, 2]);
 
@@ -65,10 +67,29 @@ export function drawGodPortrait(g: GodSpec): PixelBuffer {
   f.set(29, 13, C.skin);
   g.draw(f);
   b.blit(f.outlined(C.ink), 0, 0);
+  if (bare) return b;
   g.front?.(b);
   // frame
   b.frame(0, 0, PORTRAIT_W, PORTRAIT_H, C.ink);
   return b;
+}
+
+/**
+ * Battle manifestation: the god as a black-figure silhouette (ink body, the
+ * halo ring kept in the god's own color), to rise behind the board.
+ */
+export function godSilhouette(god: string): PixelBuffer {
+  const g = GODS[god];
+  if (!g) throw new Error(`no god ${god}`);
+  const fig = drawGodPortrait(g, true);
+  const out = new PixelBuffer(fig.w, fig.h);
+  for (let y = 0; y < fig.h; y++)
+    for (let x = 0; x < fig.w; x++) {
+      const c = fig.get(x, y);
+      if (c === 255) continue;
+      out.set(x, y, c === g.halo ? g.halo : c === C.bronze || c === C.goldHi ? C.bronze : C.ink);
+    }
+  return out;
 }
 
 export const GODS: Record<string, GodSpec> = {

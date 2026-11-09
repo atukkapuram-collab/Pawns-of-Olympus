@@ -18,7 +18,8 @@ import { BoardView, DEPTH, EMPTY_UI, type BoardUi } from '../view/BoardView';
 import { Hud } from '../view/Hud';
 import { tileOrigin } from '../view/layout';
 import { ensureTexture } from '../view/textures';
-import { banner, boltFx, popNumber, shake, shatter, slide } from '../view/fx';
+import { banner, boltFx, manifest, popNumber, shake, shatter, slide } from '../view/fx';
+import { STRINGS } from '../data/strings';
 import { wait } from '../view/ui';
 import { sfx } from '../audio/sfx';
 import { music } from '../audio/music';
@@ -46,6 +47,14 @@ export class BattleScene extends Phaser.Scene {
   favorDir: Dir = 'right';
   waveOrigin: { x: number; y: number } | null = null;
   private settleWaiters: Array<() => void> = [];
+  private godShown = new Set<string>();
+  private banterCount: Record<string, number> = {};
+
+  /** Next banter line for a god (cycles through god.<name>.1..3). */
+  banter(god: string): string {
+    const n = (this.banterCount[god] = (this.banterCount[god] ?? 0) + 1);
+    return STRINGS[`god.${god}.${((n - 1) % 3) + 1}`] ?? '';
+  }
 
   constructor() {
     super('Battle');
@@ -539,9 +548,10 @@ export class BattleScene extends Phaser.Scene {
         }
         case 'favor': {
           const o = tileOrigin(this.board.layout, e.x, e.y);
+          await manifest(this, e.god, this.banter(e.god), this.board.layout.ox + this.board.layout.cols * 12 - 24, this.board.layout.oy - 54);
           sfx.play(e.god === 'zeus' ? 'lightning' : e.god === 'poseidon' ? 'wave' : 'select');
           if (e.god === 'zeus') await boltFx(this, o.px, o.py);
-          else await wait(this, 200);
+          else await wait(this, 150);
           break;
         }
         case 'phase': {
@@ -555,6 +565,13 @@ export class BattleScene extends Phaser.Scene {
           this.board.showFire(this.state);
           await wait(this, 150);
           break;
+        case 'god': {
+          if (this.godShown.has(`${e.god}|${e.what}|${this.state.turn}`)) break;
+          this.godShown.add(`${e.god}|${e.what}|${this.state.turn}`);
+          sfx.play(e.god === 'apollo' ? 'plague' : e.god === 'ares' ? 'bump' : 'swap');
+          await manifest(this, e.god, this.banter(e.god), this.board.layout.ox + this.board.layout.cols * 12 - 24, this.board.layout.oy - 54);
+          break;
+        }
         case 'plague':
           sfx.play('plague');
           await wait(this, 200);

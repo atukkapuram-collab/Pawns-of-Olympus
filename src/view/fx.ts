@@ -8,6 +8,7 @@ import { CLEAR } from '../art/palette';
 import { PixelBuffer, ditherOn } from '../art/pixels';
 import { textBuffer } from '../art/font';
 import { panel } from '../art/ui';
+import { godSilhouette } from '../art/sprites/gods';
 import { DEPTH } from './BoardView';
 import { ensureTexture } from './textures';
 import { tween, wait } from './ui';
@@ -136,6 +137,36 @@ export async function boltFx(scene: Phaser.Scene, px: number, py: number): Promi
   await wait(scene, 90);
   img.destroy();
   await shake(scene, 2, 4);
+}
+
+/**
+ * A god appears behind the board: the silhouette dithers in while rising a
+ * few pixels, a banter line shows in an ink strip, then it dithers away.
+ */
+export async function manifest(scene: Phaser.Scene, god: string, line: string, x: number, y: number): Promise<void> {
+  const sil = godSilhouette(god);
+  const img = scene.add.image(Math.round(x), Math.round(y + 6), ensureTexture(scene, `god|${god}|16`, () => sil)).setOrigin(0, 0).setDepth(-5);
+  const steps = fxSettings.reducedMotion ? [16] : [3, 6, 10, 13, 16];
+  for (const [i, lv] of steps.entries()) {
+    img.setTexture(ensureTexture(scene, `god|${god}|${lv}`, () => ditherKeep(sil, lv)));
+    img.y = Math.round(y + 6 - (6 * (i + 1)) / steps.length);
+    await wait(scene, 50);
+  }
+  let parts: Phaser.GameObjects.Image[] = [];
+  if (line) {
+    const tb = textBuffer(line, C.cream, { maxWidth: 196 });
+    const h = tb.h + 8;
+    const bg = scene.add.image(8, 22, ensureTexture(scene, `banter|${h}`, () => panel(200, h, 'ink'))).setOrigin(0, 0).setDepth(DEPTH.fx + 5);
+    const tx = scene.add.image(13, 26, ensureTexture(scene, `bantertxt|${line}`, () => tb)).setOrigin(0, 0).setDepth(DEPTH.fx + 6);
+    parts = [bg, tx];
+  }
+  await wait(scene, fxSettings.reducedMotion ? 500 : 900);
+  for (const p of parts) p.destroy();
+  for (const lv of [10, 5, 2]) {
+    img.setTexture(ensureTexture(scene, `god|${god}|${lv}`, () => ditherKeep(sil, lv)));
+    await wait(scene, 45);
+  }
+  img.destroy();
 }
 
 /** Generic short slide of an image to a point, in whole pixels. */
