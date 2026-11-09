@@ -77,7 +77,7 @@ export class ResultScene extends Phaser.Scene {
       if (outro && outro !== level.outro) this.centerText(y + 72, outro, C.ink, W - 24);
       const by = y + H - 30;
       this.buttons.push(addButton(this, x + 118, by, 56, 14, next ? t('ui.next') : 'Onward', () => { music.stop(); afterVictory(this, level.id); }, 'E'));
-      this.buttons.push(addButton(this, x + 74, by, 36, 14, 'Map', () => this.toMap(level.act)));
+      this.buttons.push(addButton(this, x + 70, by, 44, 14, 'Map', () => this.toMap(level.act), 'M'));
       this.buttons.push(addButton(this, x + 10, by, 56, 14, t('ui.retry'), () => this.go(level.id, data.patron), 'R'));
     } else {
       this.centerText(y + 6, t('ui.defeat'), C.cream);
@@ -85,12 +85,12 @@ export class ResultScene extends Phaser.Scene {
       this.centerText(y + 40, STRINGS[`lose.${why}`] ?? LOSE_FALLBACK[why] ?? '', C.umber, W - 16);
       this.buttons.push(addButton(this, x + 10, y + H - 30, 64, 14, t('ui.retry'), () => this.go(level.id, data.patron), 'R'));
       this.buttons.push(addButton(this, x + W - 96 - 10, y + H - 30, 96, 14, t('ui.undoLastTurn'), () => battle.undoLastTurn(), 'Z'));
-      this.buttons.push(addButton(this, x + Math.floor(W / 2) - 18, y + 60, 36, 14, 'Map', () => this.toMap(level.act)));
+      this.buttons.push(addButton(this, x + Math.floor(W / 2) - 22, y + 60, 44, 14, 'Map', () => this.toMap(level.act), 'M'));
     }
     for (const b of this.buttons) b.img.setDepth(d + 2);
 
     this.input.keyboard?.on('keydown', (e: KeyboardEvent) => {
-      const map: Record<string, string> = { KeyE: 'E', Enter: 'E', KeyR: 'R', KeyZ: 'Z' };
+      const map: Record<string, string> = { KeyE: 'E', Enter: 'E', KeyR: 'R', KeyZ: 'Z', KeyM: 'M' };
       const want = map[e.code];
       const b = this.buttons.find((bb) => (bb.img.texture.key.split('|')[4] ?? '') === want);
       b?.press();

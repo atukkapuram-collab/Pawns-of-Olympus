@@ -46,6 +46,10 @@ export class BattleScene extends Phaser.Scene {
   preview: { x: number; y: number } | null = null;
   favorDir: Dir = 'right';
   waveOrigin: { x: number; y: number } | null = null;
+  /** Push/swap may target allies only after the player picks the ability explicitly. */
+  aimAllies = false;
+  /** A pause or restart pressed during an animation, run when it ends (BUG-18). */
+  pendingKey: 'pause' | 'restart' | null = null;
   private settleWaiters: Array<() => void> = [];
   private godShown = new Set<string>();
   private banterCount: Record<string, number> = {};
@@ -111,7 +115,7 @@ export class BattleScene extends Phaser.Scene {
     const u = this.selected ? unitById(s, this.selected) : undefined;
     if (u && onBoard(u) && s.phase === 'player' && this.mode === 'idle') {
       ui.moveTiles = [...moveOptions(s, u).values()].map((p) => p[p.length - 1]!);
-      ui.targetTiles = canAct(s, u) ? abilityTargets(s, u, this.ability) : [];
+      ui.targetTiles = canAct(s, u) ? abilityTargets(s, u, this.ability).filter((t) => this.aimAllies || unitAt(s, t.x, t.y)?.team !== 'greek') : [];
     }
     if (this.mode === 'favor' && s.patron === 'poseidon' && this.waveOrigin) ui.wave = { ...this.waveOrigin, dir: this.favorDir };
     if (this.mode === 'favor' && s.patron === 'athena') ui.targetTiles = s.units.filter((v) => v.team === 'greek' && onBoard(v) && v.acted).map((v) => ({ x: v.x, y: v.y }));
@@ -121,7 +125,7 @@ export class BattleScene extends Phaser.Scene {
   refresh(): void {
     this.board.refresh(this.state, this.ui());
     const infoUnit = (this.info && unitById(this.state, this.info)) || (this.selected && unitById(this.state, this.selected)) || null;
-    this.hud.update(this.state, this.session.canUndo, this.busy, infoUnit && onBoard(infoUnit) ? infoUnit : null, this.mode === 'favor', this.selected, this.ability);
+    this.hud.update(this.state, this.session.canUndo, this.busy, infoUnit && onBoard(infoUnit) ? infoUnit : null, this.mode === 'favor', this.selected, this.ability, this.aimAllies);
     // facing: Greeks are drawn facing right, Trojans facing left
     for (const u of this.state.units) {
       const v = this.board.units.get(u.id);
@@ -132,6 +136,7 @@ export class BattleScene extends Phaser.Scene {
   }
 
   private select(id: string | null): void {
+    if (id !== this.selected) this.aimAllies = false;
     this.selected = id;
     this.preview = null;
     const u = id ? unitById(this.state, id) : undefined;
@@ -207,7 +212,7 @@ export class BattleScene extends Phaser.Scene {
     const isTarget = ui.targetTiles.some((t) => t.x === x && t.y === y);
     const isMove = ui.moveTiles.some((t) => t.x === x && t.y === y);
 
-    const allyTarget = !!here && here.team === 'greek' && isTarget;
+    const allyTarget = !!here && here.team === 'greek' && isTarget && this.aimAllies;
     if (sel && isTarget && (!allyTarget || (this.preview?.x === x && this.preview?.y === y))) {
       if (!confirmed) { this.preview = { x, y }; this.info = here?.id ?? null; sfx.play('select'); this.refresh(); return; }
       this.preview = null;
@@ -258,7 +263,11 @@ export class BattleScene extends Phaser.Scene {
     const k = e.code;
     if (k === 'KeyE') return this.hud.endTurn.press();
     if (k === 'KeyZ') return this.hud.undo.press();
-    if (k === 'KeyR') return this.hud.restart.press();
+    if (k === 'KeyR') {
+      if (this.busy) { this.pendingKey = 'restart'; return; }
+      return this.hud.restart.press();
+    }
+    if ((k === 'Escape' || k === 'KeyP') && this.busy) { this.pendingKey = 'pause'; return; }
     if (k === 'KeyF') return this.hud.favor?.press();
     if (this.busy || s.phase !== 'player') return;
     if (k === 'Escape' || k === 'KeyP') {
@@ -318,6 +327,7 @@ export class BattleScene extends Phaser.Scene {
 
   setAbility(a: Ability): void {
     this.ability = a;
+    this.aimAllies = true; // an explicit choice: allies in reach become targets
     this.preview = null;
     sfx.play('tick');
     this.refresh();
@@ -594,6 +604,11 @@ export class BattleScene extends Phaser.Scene {
   }
 
   private afterPlay(): void {
+    const pend = this.pendingKey;
+    this.pendingKey = null;
+    if (pend && this.state.phase !== 'won' && this.state.phase !== 'lost') {
+      this.time.delayedCall(0, () => (pend === 'restart' ? this.restart() : this.openPause()));
+    }
     // keep a sensible selection
     const sel = this.selected ? unitById(this.state, this.selected) : undefined;
     if (!sel || !onBoard(sel)) this.select(this.heroes()[0]?.id ?? null);
@@ -609,6 +624,7 @@ export class BattleScene extends Phaser.Scene {
         sfx.play(s.phase === 'won' ? 'victory' : 'defeat');
         this.scene.launch('Result', { levelId: this.level.id, won: s.phase === 'won', state: s, patron: this.session.patron });
         this.scene.bringToTop('Result');
+        if (this.scene.isActive('Rotate')) this.scene.bringToTop('Rotate');
       });
     }
     for (const w of this.settleWaiters.splice(0)) w();

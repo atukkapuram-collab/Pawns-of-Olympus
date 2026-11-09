@@ -8,7 +8,7 @@ import { C } from '../art/palette';
 import { PixelBuffer, meanderBand, zigzagBand } from '../art/pixels';
 import { panel } from '../art/ui';
 import { buildFigureFrames } from '../art/sprites/units';
-import { buildPortrait, GODS } from '../art/sprites/gods';
+import { buildPortrait, drawGodPortrait, GODS } from '../art/sprites/gods';
 import { shipSprite } from '../art/sprites/extras';
 import { t } from '../data/strings';
 import { levelById } from '../data/levels/index';
@@ -27,9 +27,9 @@ const NAME_TO_TYPE: Record<string, string> = {
 
 /** Figures for act-intro panels, by act then panel. */
 const ACT_CAST: Record<number, string[][]> = {
-  1: [['ship', 'ship', 'ship'], ['achilles', 'ajax', 'spearman', 'archer'], ['ajax', 'ship', 'spearman'], ['odysseus', 'achilles', 'ajax']],
-  2: [['achilles'], ['diomedes', 'odysseus', 'spearman', 'chariot'], ['patroclus', 'hector'], ['ajax', 'diomedes', 'hector']],
-  3: [['achilles', 'hector'], ['achilles', 'spearman', 'shieldbearer', 'archer'], ['paris', 'achilles'], ['odysseus', 'diomedes', 'ajax']],
+  1: [['god:zeus', 'god:athena', 'god:poseidon'], ['ship', 'ship', 'ship'], ['god:zeus'], ['achilles', 'ajax', 'odysseus', 'spearman', 'archer']],
+  2: [['achilles', 'odysseus'], ['achilles'], ['ship', 'ship'], ['god:apollo', 'god:ares', 'god:aphrodite']],
+  3: [['achilles'], ['achilles'], ['achilles', 'odysseus', 'ajax'], ['god:zeus', 'god:athena']],
 };
 
 export class CutsceneScene extends Phaser.Scene {
@@ -183,6 +183,11 @@ export class CutsceneScene extends Phaser.Scene {
       if (type === 'ship') {
         const s = shipSprite();
         b.blit(s, x - 12, ground - s.h + 2);
+        return;
+      }
+      if (type.startsWith('god:')) {
+        const g = drawGodPortrait(GODS[type.slice(4)]!, true);
+        b.blit(g, x - 24, ground - g.h + 2);
         return;
       }
       const f = buildFigureFrames(type).idle0;

@@ -54,7 +54,7 @@ export class SettingsScene extends Phaser.Scene {
     else this.cameras.main.setBackgroundColor('#2a1a10');
     const { x, y } = frame(this, 220, 150, 'set|frame');
     addText(this, x + 10, y + 16, t('ui.settings'), C.ink).setDepth(11);
-    const vol = (k: 'music' | 'sound') => ({ get: () => '#'.repeat(Math.round(this.st[k] * 10)).padEnd(10, '.'), change: (d: number) => { this.st[k] = Math.max(0, Math.min(1, Math.round((this.st[k] + d * 0.1) * 10) / 10)); } });
+    const vol = (k: 'music' | 'sound') => ({ get: () => `${Math.round(this.st[k] * 10)} / 10`, change: (d: number) => { this.st[k] = Math.max(0, Math.min(1, Math.round((this.st[k] + d * 0.1) * 10) / 10)); } });
     const flag = (k: 'muted' | 'shake' | 'reducedMotion' | 'highContrast') => ({ get: () => (this.st[k] ? 'On' : 'Off'), change: () => { this.st[k] = !this.st[k]; } });
     this.rows = [
       { label: 'Music', ...vol('music') },

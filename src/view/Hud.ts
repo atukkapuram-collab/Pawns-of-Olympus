@@ -69,7 +69,7 @@ export class Hud {
     for (const b of [this.favor, this.endTurn, this.undo, this.restart]) b?.img.setDepth(d + 1);
   }
 
-  update(s: GameState, canUndo: boolean, busy: boolean, info: Unit | null, favorArmed: boolean, selected: string | null, ability: Ability): void {
+  update(s: GameState, canUndo: boolean, busy: boolean, info: Unit | null, favorArmed: boolean, selected: string | null, ability: Ability, aimAllies = false): void {
     const d = DEPTH.hud + 1;
     setText(this.turnText, `${t('ui.turn')} ${Math.min(s.turn, 99)}/${s.par}`, s.turn > s.par ? C.red : C.ink);
 
@@ -80,7 +80,7 @@ export class Hud {
     if (this.favor) {
       this.favor.setEnabled(playing && !s.favorUsed);
       const g = cap(s.patron!);
-      this.favor.setLabel(s.favorUsed ? `${g}: spent` : favorArmed ? (s.patron === 'poseidon' ? 'Pick a line' : 'Pick a tile') : g);
+      this.favor.setLabel(s.favorUsed ? `${g}: spent` : favorArmed ? (s.patron === 'poseidon' ? 'Pick a line' : s.patron === 'athena' ? 'Pick a hero' : 'Pick a tile') : g);
     }
 
     // info card
@@ -96,7 +96,7 @@ export class Hud {
       const pips = this.scene.add.image(x + name.width + 4, 30, ensureTexture(this.scene, `pips|${info.hp}|${info.maxHp}|${team}`, () => hpPips(info.hp, info.maxHp, team))).setOrigin(0, 0).setDepth(d);
       this.infoParts.push(name, pips);
       const abs = info.team === 'greek' ? abilitiesOf(info) : [];
-      const toggles = abs.length > 1 && info.id === selected && s.phase === 'player';
+      const toggles = (abs.length > 1 || abs.includes('push')) && info.id === selected && s.phase === 'player';
       const lines = describe(info, s).slice(0, toggles ? 1 : 3);
       let ly = 39;
       for (const ln of lines) {
@@ -109,8 +109,10 @@ export class Hud {
       if (toggles) {
         const w = Math.floor((HUD_W - 22) / 2);
         abs.slice(0, 2).forEach((a, i) => {
-          const b = addButton(this.scene, x + i * (w + 2), 51, w, 13, ABILITY_LABEL[a], () => this.h.ability(a), String(i + 1));
-          b.setActive(a === ability);
+          const label = abs.length === 1 ? 'Aim at ally' : ABILITY_LABEL[a];
+          const bw2 = abs.length === 1 ? w * 2 + 2 : w;
+          const b = addButton(this.scene, x + i * (w + 2), 51, bw2, 13, label, () => this.h.ability(a), String(i + 1));
+          b.setActive(a === ability && (abs.length > 1 || aimAllies));
           b.img.setDepth(d + 1);
           this.abilityBtns.push(b);
         });

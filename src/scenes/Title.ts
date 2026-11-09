@@ -12,7 +12,7 @@ import { logoBuffer } from '../art/logo';
 import { buildFigureFrames } from '../art/sprites/units';
 import { t } from '../data/strings';
 import { LEVELS } from '../data/levels/index';
-import { loadSave } from '../game/save';
+import { freshSave, loadSave, writeSave } from '../game/save';
 import { startLevel } from '../game/flow';
 import { music } from '../audio/music';
 import { ensureTexture } from '../view/textures';
@@ -111,9 +111,19 @@ export class TitleScene extends Phaser.Scene {
     const hasProgress = Object.keys(save.levels).length > 0;
     const items: Array<[string, () => void, string?]> = [];
     if (hasProgress) items.push([t('ui.continue'), () => { sfx.play('select'); this.scene.start('LevelSelect', { levelId: firstUnwon.id }); }, 'E']);
-    items.push([t('ui.newCampaign'), () => this.start(LEVELS[0]!.id), hasProgress ? 'N' : 'E']);
-    items.push([t('ui.settings'), () => this.scene.start('Settings', { back: 'Title' })]);
-    items.push([t('ui.credits'), () => this.scene.start('Credits', {})]);
+    let confirmErase = false;
+    items.push([t('ui.newCampaign'), () => {
+      if (hasProgress && !confirmErase) {
+        confirmErase = true;
+        sfx.play('invalid');
+        buttons[1]!.setLabel('Erase progress?');
+        return;
+      }
+      if (hasProgress) writeSave(freshSave());
+      this.start(LEVELS[0]!.id);
+    }, hasProgress ? 'N' : 'E']);
+    items.push([t('ui.settings'), () => this.scene.start('Settings', { back: 'Title' }), 'S']);
+    items.push([t('ui.credits'), () => this.scene.start('Credits', {}), 'C']);
     const tw = 104, th = items.length * 15 + 10;
     const tx = Math.round(160 - tw / 2), ty = 60 + Math.round((72 - th) / 2);
     this.add.image(tx, ty, ensureTexture(this, `title|tablet|${th}`, () => panel(tw, th, 'clay'))).setOrigin(0, 0);
@@ -125,6 +135,8 @@ export class TitleScene extends Phaser.Scene {
       music.play('title');
       if (e.code === 'Enter' || e.code === 'KeyE' || e.code === 'Space') buttons[0]!.press();
       if (e.code === 'KeyN' && hasProgress) buttons[1]!.press();
+      if (e.code === 'KeyS') buttons[buttons.length - 2]!.press();
+      if (e.code === 'KeyC') buttons[buttons.length - 1]!.press();
     });
     this.input.on('pointerdown', () => { sfx.unlock(); music.play('title'); });
     this.game.events.emit('poo:ready', 'Title');

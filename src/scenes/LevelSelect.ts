@@ -10,7 +10,7 @@ import { panel } from '../art/ui';
 import { textBuffer } from '../art/font';
 import { buildFigureFrames } from '../art/sprites/units';
 import { LEVELS } from '../data/levels/index';
-import { t } from '../data/strings';
+import { STRINGS, t } from '../data/strings';
 import { isUnlocked, startLevel } from '../game/flow';
 import { loadSave } from '../game/save';
 import { ensureTexture } from '../view/textures';
@@ -143,9 +143,9 @@ export class LevelSelectScene extends Phaser.Scene {
     this.items = [];
     const save = loadSave();
     const levels = LEVELS.filter((l) => l.act === this.act);
-    const title = addText(this, 0, 14, `Act ${ROMAN[this.act]}`, C.ink);
+    const title = addText(this, 0, 11, `Act ${ROMAN[this.act]}`, C.ink);
     title.x = Math.round(160 - title.width / 2);
-    const sub = addText(this, 0, 22, t(`act.${this.act}.title`) !== `act.${this.act}.title` ? t(`act.${this.act}.title`) : '', C.umber);
+    const sub = addText(this, 0, 20, t(`act.${this.act}.title`) !== `act.${this.act}.title` ? t(`act.${this.act}.title`) : '', C.umber);
     sub.x = Math.round(160 - sub.width / 2);
     this.items.push(title, sub);
 
@@ -182,7 +182,8 @@ export class LevelSelectScene extends Phaser.Scene {
     const tab = this.add.image(40, 132, ensureTexture(this, 'ls|tab3', () => panel(240, 42, 'cream'))).setOrigin(0, 0);
     this.items.push(tab);
     this.items.push(addText(this, 46, 136, `${l.index}. ${l.title}`, C.ink));
-    this.items.push(addText(this, 46, 146, open ? l.teaches : 'Unpainted clay. Win the one before.', C.umber, { maxWidth: 176 }));
+    const blurb = STRINGS[`lvl.${l.id}.intro`] ?? l.teaches;
+    this.items.push(addText(this, 46, 147, open ? blurb : 'Unpainted clay. Win the one before.', C.umber, { maxWidth: 176 }));
     const play = addButton(this, 228, 150, 46, 14, 'Play', () => this.play(), 'E');
     play.setEnabled(open);
     this.items.push(play.img);
