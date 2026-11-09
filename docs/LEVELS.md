@@ -15,10 +15,10 @@ Format and principles: `.claude/skills/pawns-level-design/SKILL.md`. Rules: `doc
 | 8 | a2-03 | In Borrowed Armor | Patroclus draws every attack; decoy routing | all | — | 4 |
 | 9 | a2-04 | Apollo's Plague | Telegraphed plague arrows; keep moving | all | Apollo | 3 |
 | 10 | a2-05 | Hector at the Gates | Boss sweep, Ares' rage; escort Diomedes to the gate | all | Ares | 4 |
-| 11 | a3-01 | The Wrath | Achilles alone vs many; efficient routing | all | Ares | tbd |
-| 12 | a3-02 | Mist of Aphrodite | A defeated enemy returns; plan for it | all | Aphrodite | tbd |
-| 13 | a3-03 | Paris on the Walls | Arrows kill Achilles; shield him with Ajax | all | — | tbd |
-| 14 | a3-04 | The Wooden Gift | Stealth: avoid torchlight and sentry sight | all | — | tbd |
-| 15 | a3-05 | The Gates Open | Finale: everything together | all | Apollo, Ares, Aphrodite | tbd |
+| 11 | a3-01 | The Wrath | Achilles alone: the order of kills, shieldbearer fronts, archer lines | all | — | 4 |
+| 12 | a3-02 | Mist of Aphrodite | A defeated Trojan returns; kill early so it comes back in time | all | Aphrodite | 3 |
+| 13 | a3-03 | Paris on the Walls | Walk Ajax ahead of Achilles up the stair in Paris's line; reach the gate | all | — | 3 |
+| 14 | a3-04 | The Wooden Gift | Stealth: avoid torchlight and sentry sight | all | — | 3 |
+| 15 | a3-05 | The Gates Open | Finale: swap Hector into his own men under Apollo, Ares and Aphrodite | all | Apollo, Ares, Aphrodite | 4 |
 
-*Par, boards and Kleos notes are filled in as levels are built (M2–M5).*
+Kleos on every level: win; no hero falls; win within par. Pars were checked with an exhaustive solver for L11-L14 (true minimum); L15 par is a found solution.

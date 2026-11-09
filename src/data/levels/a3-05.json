@@ -1,0 +1,277 @@
+{
+  "id": "a3-05",
+  "act": 3,
+  "index": 15,
+  "title": "The Gates Open",
+  "teaches": "Everything together: Paris hunts Achilles, Apollo's plague marks the heroes, Ares rages, Aphrodite saves the first to fall. Swap Hector into his own men.",
+  "backdrop": "walls",
+  "board": [
+    "##......",
+    "..#.....",
+    "........",
+    "...#....",
+    "........",
+    ".#...#..",
+    "........"
+  ],
+  "legend": {},
+  "units": [
+    {
+      "type": "achilles",
+      "x": 0,
+      "y": 6
+    },
+    {
+      "type": "ajax",
+      "x": 1,
+      "y": 6
+    },
+    {
+      "type": "odysseus",
+      "x": 0,
+      "y": 5
+    },
+    {
+      "type": "hector",
+      "x": 5,
+      "y": 1,
+      "facing": "down"
+    },
+    {
+      "type": "shieldbearer",
+      "x": 3,
+      "y": 2,
+      "facing": "left"
+    },
+    {
+      "type": "spearman",
+      "x": 6,
+      "y": 3,
+      "facing": "left"
+    },
+    {
+      "type": "shieldbearer",
+      "x": 4,
+      "y": 4,
+      "facing": "left"
+    },
+    {
+      "type": "spearman",
+      "x": 7,
+      "y": 5,
+      "facing": "left"
+    },
+    {
+      "type": "archer",
+      "x": 7,
+      "y": 2,
+      "facing": "left"
+    },
+    {
+      "type": "paris",
+      "x": 4,
+      "y": 0,
+      "facing": "down"
+    }
+  ],
+  "objective": {
+    "type": "rout"
+  },
+  "patrons": [
+    "zeus",
+    "athena",
+    "poseidon"
+  ],
+  "trojanEvent": {
+    "apollo": {
+      "every": 2,
+      "from": 2
+    },
+    "ares": {
+      "turns": [
+        3
+      ]
+    },
+    "aphrodite": {
+      "x": 7,
+      "y": 0
+    }
+  },
+  "par": 4,
+  "intro": "lvl.a3-05.intro",
+  "outro": "lvl.a3-05.outro",
+  "solution": {
+    "patron": "zeus",
+    "turns": [
+      [
+        [
+          "favor",
+          "zeus",
+          5,
+          1
+        ],
+        [
+          "move",
+          "odysseus",
+          2,
+          4
+        ],
+        [
+          "act",
+          "odysseus",
+          "swap",
+          4,
+          4
+        ],
+        [
+          "move",
+          "ajax",
+          2,
+          5
+        ],
+        [
+          "act",
+          "ajax",
+          "strike",
+          2,
+          4
+        ],
+        [
+          "move",
+          "achilles",
+          1,
+          6
+        ],
+        [
+          "endTurn"
+        ]
+      ],
+      [
+        [
+          "move",
+          "odysseus",
+          4,
+          5
+        ],
+        [
+          "act",
+          "odysseus",
+          "swap",
+          4,
+          3
+        ],
+        [
+          "move",
+          "ajax",
+          3,
+          4
+        ],
+        [
+          "move",
+          "achilles",
+          4,
+          6
+        ],
+        [
+          "act",
+          "achilles",
+          "strike",
+          4,
+          5
+        ],
+        [
+          "act",
+          "ajax",
+          "strike",
+          2,
+          4
+        ],
+        [
+          "endTurn"
+        ]
+      ],
+      [
+        [
+          "move",
+          "achilles",
+          5,
+          4
+        ],
+        [
+          "act",
+          "achilles",
+          "strike",
+          5,
+          3
+        ],
+        [
+          "move",
+          "odysseus",
+          5,
+          1
+        ],
+        [
+          "act",
+          "odysseus",
+          "strike",
+          4,
+          1
+        ],
+        [
+          "move",
+          "ajax",
+          4,
+          3
+        ],
+        [
+          "act",
+          "ajax",
+          "strike",
+          4,
+          2
+        ],
+        [
+          "endTurn"
+        ]
+      ],
+      [
+        [
+          "act",
+          "odysseus",
+          "swap",
+          5,
+          0
+        ],
+        [
+          "move",
+          "ajax",
+          4,
+          1
+        ],
+        [
+          "act",
+          "ajax",
+          "strike",
+          5,
+          1
+        ],
+        [
+          "move",
+          "achilles",
+          4,
+          2
+        ],
+        [
+          "act",
+          "achilles",
+          "strike",
+          5,
+          2
+        ],
+        [
+          "endTurn"
+        ]
+      ]
+    ]
+  }
+}

@@ -1,0 +1,123 @@
+{
+  "id": "a3-03",
+  "act": 3,
+  "index": 13,
+  "title": "Paris on the Walls",
+  "teaches": "Paris can't be reached on the walls, and his arrows kill Achilles. Walk Ajax ahead in the narrow stair: an arrow stops at the first one in its path.",
+  "backdrop": "walls",
+  "board": [
+    "###.###",
+    "~~~~~~~",
+    "##.G.##",
+    "###.###",
+    "###.###",
+    "#.#.#.#",
+    "......."
+  ],
+  "legend": {},
+  "units": [
+    {
+      "type": "achilles",
+      "x": 0,
+      "y": 6
+    },
+    {
+      "type": "ajax",
+      "x": 2,
+      "y": 6
+    },
+    {
+      "type": "paris",
+      "x": 3,
+      "y": 0,
+      "facing": "down"
+    },
+    {
+      "type": "spearman",
+      "x": 3,
+      "y": 4,
+      "facing": "down"
+    },
+    {
+      "type": "spearman",
+      "x": 6,
+      "y": 6,
+      "facing": "left"
+    }
+  ],
+  "objective": {
+    "type": "escort",
+    "unit": "achilles",
+    "x": 3,
+    "y": 2
+  },
+  "patrons": [
+    "zeus",
+    "athena",
+    "poseidon"
+  ],
+  "trojanEvent": null,
+  "par": 3,
+  "intro": "lvl.a3-03.intro",
+  "outro": "lvl.a3-03.outro",
+  "solution": {
+    "patron": "zeus",
+    "turns": [
+      [
+        [
+          "move",
+          "ajax",
+          3,
+          5
+        ],
+        [
+          "act",
+          "ajax",
+          "strike",
+          3,
+          4
+        ],
+        [
+          "move",
+          "achilles",
+          3,
+          6
+        ],
+        [
+          "endTurn"
+        ]
+      ],
+      [
+        [
+          "move",
+          "ajax",
+          3,
+          3
+        ],
+        [
+          "move",
+          "achilles",
+          3,
+          4
+        ],
+        [
+          "endTurn"
+        ]
+      ],
+      [
+        [
+          "move",
+          "ajax",
+          2,
+          2
+        ],
+        [
+          "move",
+          "achilles",
+          3,
+          2
+        ]
+      ]
+    ]
+  }
+}

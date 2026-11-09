@@ -1,0 +1,139 @@
+{
+  "id": "a3-01",
+  "act": 3,
+  "index": 11,
+  "title": "The Wrath",
+  "teaches": "Achilles alone: spears can't hurt him, so the only questions are the order of the kills and the archer's line.",
+  "backdrop": "plain",
+  "board": [
+    "...#...",
+    ".......",
+    ".#...#.",
+    ".......",
+    "...#...",
+    "......."
+  ],
+  "legend": {},
+  "units": [
+    {
+      "type": "achilles",
+      "x": 0,
+      "y": 5
+    },
+    {
+      "type": "spearman",
+      "x": 2,
+      "y": 1,
+      "facing": "down"
+    },
+    {
+      "type": "shieldbearer",
+      "x": 3,
+      "y": 2,
+      "facing": "left"
+    },
+    {
+      "type": "spearman",
+      "x": 5,
+      "y": 3,
+      "facing": "left"
+    },
+    {
+      "type": "shieldbearer",
+      "x": 5,
+      "y": 5,
+      "facing": "left"
+    },
+    {
+      "type": "archer",
+      "x": 6,
+      "y": 0,
+      "facing": "down"
+    }
+  ],
+  "objective": {
+    "type": "rout"
+  },
+  "patrons": [
+    "zeus",
+    "athena",
+    "poseidon"
+  ],
+  "trojanEvent": null,
+  "par": 4,
+  "intro": "lvl.a3-01.intro",
+  "outro": "lvl.a3-01.outro",
+  "solution": {
+    "patron": "zeus",
+    "turns": [
+      [
+        [
+          "favor",
+          "zeus",
+          5,
+          5
+        ],
+        [
+          "move",
+          "achilles",
+          3,
+          5
+        ],
+        [
+          "endTurn"
+        ]
+      ],
+      [
+        [
+          "move",
+          "achilles",
+          5,
+          4
+        ],
+        [
+          "act",
+          "achilles",
+          "strike",
+          4,
+          4
+        ],
+        [
+          "endTurn"
+        ]
+      ],
+      [
+        [
+          "move",
+          "achilles",
+          4,
+          4
+        ],
+        [
+          "act",
+          "achilles",
+          "strike",
+          4,
+          3
+        ],
+        [
+          "endTurn"
+        ]
+      ],
+      [
+        [
+          "move",
+          "achilles",
+          3,
+          2
+        ],
+        [
+          "act",
+          "achilles",
+          "strike",
+          4,
+          2
+        ]
+      ]
+    ]
+  }
+}

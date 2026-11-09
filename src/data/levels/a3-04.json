@@ -1,0 +1,125 @@
+{
+  "id": "a3-04",
+  "act": 3,
+  "index": 14,
+  "title": "The Wooden Gift",
+  "teaches": "Stealth: reach the gate unseen. Never end a turn in torchlight or within three tiles of where a sentry looks.",
+  "backdrop": "night",
+  "board": [
+    "...G...",
+    ".#*.*#.",
+    ".......",
+    "..#.#..",
+    ".......",
+    "......."
+  ],
+  "legend": {},
+  "units": [
+    {
+      "type": "odysseus",
+      "x": 1,
+      "y": 5
+    },
+    {
+      "type": "diomedes",
+      "x": 5,
+      "y": 5
+    },
+    {
+      "type": "spearman",
+      "x": 3,
+      "y": 2,
+      "facing": "down"
+    },
+    {
+      "type": "spearman",
+      "x": 0,
+      "y": 2,
+      "facing": "right"
+    },
+    {
+      "type": "archer",
+      "x": 6,
+      "y": 1,
+      "facing": "left"
+    }
+  ],
+  "objective": {
+    "type": "stealth"
+  },
+  "patrons": [
+    "zeus",
+    "athena",
+    "poseidon"
+  ],
+  "trojanEvent": null,
+  "par": 3,
+  "intro": "lvl.a3-04.intro",
+  "outro": "lvl.a3-04.outro",
+  "solution": {
+    "patron": "zeus",
+    "turns": [
+      [
+        [
+          "favor",
+          "zeus",
+          3,
+          2
+        ],
+        [
+          "move",
+          "diomedes",
+          3,
+          5
+        ],
+        [
+          "move",
+          "odysseus",
+          3,
+          4
+        ],
+        [
+          "endTurn"
+        ]
+      ],
+      [
+        [
+          "move",
+          "odysseus",
+          3,
+          1
+        ],
+        [
+          "move",
+          "diomedes",
+          3,
+          3
+        ],
+        [
+          "act",
+          "odysseus",
+          "swap",
+          3,
+          3
+        ],
+        [
+          "endTurn"
+        ]
+      ],
+      [
+        [
+          "move",
+          "diomedes",
+          3,
+          0
+        ],
+        [
+          "move",
+          "odysseus",
+          3,
+          0
+        ]
+      ]
+    ]
+  }
+}

@@ -1,0 +1,156 @@
+{
+  "id": "a3-02",
+  "act": 3,
+  "index": 12,
+  "title": "Mist of Aphrodite",
+  "teaches": "The first Trojan you defeat is carried off in mist and comes back two turns later at full strength on the marked tile. Choose who falls first, and be waiting.",
+  "backdrop": "plain",
+  "board": [
+    "......",
+    ".#..#.",
+    "......",
+    "..#...",
+    "......"
+  ],
+  "legend": {},
+  "units": [
+    {
+      "type": "achilles",
+      "x": 0,
+      "y": 4
+    },
+    {
+      "type": "diomedes",
+      "x": 1,
+      "y": 4
+    },
+    {
+      "type": "spearman",
+      "x": 3,
+      "y": 2,
+      "facing": "left"
+    },
+    {
+      "type": "shieldbearer",
+      "x": 2,
+      "y": 0,
+      "facing": "down"
+    },
+    {
+      "type": "spearman",
+      "x": 5,
+      "y": 4,
+      "facing": "left"
+    },
+    {
+      "type": "archer",
+      "x": 5,
+      "y": 0,
+      "facing": "down"
+    }
+  ],
+  "objective": {
+    "type": "rout"
+  },
+  "patrons": [
+    "zeus",
+    "athena",
+    "poseidon"
+  ],
+  "trojanEvent": {
+    "aphrodite": {
+      "x": 0,
+      "y": 0
+    }
+  },
+  "par": 3,
+  "intro": "lvl.a3-02.intro",
+  "outro": "lvl.a3-02.outro",
+  "solution": {
+    "patron": "zeus",
+    "turns": [
+      [
+        [
+          "favor",
+          "zeus",
+          5,
+          4
+        ],
+        [
+          "move",
+          "diomedes",
+          3,
+          4
+        ],
+        [
+          "move",
+          "achilles",
+          1,
+          2
+        ],
+        [
+          "endTurn"
+        ]
+      ],
+      [
+        [
+          "move",
+          "diomedes",
+          3,
+          2
+        ],
+        [
+          "act",
+          "diomedes",
+          "push",
+          2,
+          2
+        ],
+        [
+          "move",
+          "achilles",
+          2,
+          2
+        ],
+        [
+          "act",
+          "achilles",
+          "strike",
+          2,
+          1
+        ],
+        [
+          "endTurn"
+        ]
+      ],
+      [
+        [
+          "move",
+          "diomedes",
+          2,
+          1
+        ],
+        [
+          "act",
+          "diomedes",
+          "push",
+          2,
+          0
+        ],
+        [
+          "move",
+          "achilles",
+          3,
+          1
+        ],
+        [
+          "act",
+          "achilles",
+          "strike",
+          3,
+          0
+        ]
+      ]
+    ]
+  }
+}

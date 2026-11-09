@@ -25,3 +25,6 @@ Format: decision · options considered · why.
 21. **a2-05 "Hector at the Gates" is an escort, not a rout.** The story has Hector withdraw unbeaten in Act II and fall in Act III; a rout would kill him early. Win = Diomedes reaches the gate.
 22. **Plague stays as built** (marks the tiles heroes stand on; hits at the end of the next enemy phase). It teaches "keep moving" more than "shelter under Ajax". Kept because it is readable; the finale combines it with other threats to make it bite.
 23. **Diomedes' spear push moves allies without damage.** Legal per GDD §5; players can use it to give a slow ally an extra tile.
+24. **a3-03 "Paris on the Walls" is an escort (Achilles reaches the gate)**, with Paris fixed in a tower above a stair. As a rout, Achilles simply sidestepped Paris's lines and Ajax was never needed.
+25. **a3-01 has no Ares**: with Ares, ending turns and letting the Trojans hit each other won within par.
+26. **Trojans stay a little clumsy** (an idle Trojan faces the nearest hero even if an ally is in the way; spearmen still value Achilles as a target though melee can't hurt him). Changing the AI now would invalidate the recorded solutions, and "the gods use mortals carelessly" fits the theme. Logged for a future tuning pass.
