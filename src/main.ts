@@ -9,13 +9,15 @@ import { CutsceneScene } from './scenes/Cutscene';
 import { PatronScene } from './scenes/Patron';
 import { LevelSelectScene } from './scenes/LevelSelect';
 import { CreditsScene, FlowScene, PauseScene, SettingsScene } from './scenes/Menus';
+import { RotateScene, watchOrientation } from './scenes/Rotate';
 import { tileOrigin } from './view/layout';
 import type { PatronId } from './core/types';
 
-const game = new Phaser.Game(makeConfig([BootScene, TitleScene, LevelSelectScene, PatronScene, CutsceneScene, BattleScene, ResultScene, PauseScene, SettingsScene, CreditsScene, FlowScene]));
+const game = new Phaser.Game(makeConfig([BootScene, TitleScene, LevelSelectScene, PatronScene, CutsceneScene, BattleScene, ResultScene, PauseScene, SettingsScene, CreditsScene, FlowScene, RotateScene]));
 
 game.events.once(Phaser.Core.Events.READY, () => {
   attachIntegerScaler(game.canvas, () => game.scale.refresh());
+  watchOrientation(game);
 });
 
 /**
@@ -26,7 +28,8 @@ const hook = {
   game,
   scene(): string | null {
     const active = game.scene.getScenes(true);
-    return active.length ? active[active.length - 1]!.scene.key : null;
+    const keys = active.map((s) => s.scene.key).filter((k) => k !== 'Rotate');
+    return keys.length ? keys[keys.length - 1]! : null;
   },
   battle(): BattleScene | null {
     const b = game.scene.getScene('Battle') as BattleScene | null;
