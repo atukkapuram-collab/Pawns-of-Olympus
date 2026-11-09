@@ -100,6 +100,12 @@ export function addButton(
   return api;
 }
 
+/** Slide a group of images sideways by dx (whole pixels), e.g. turning the vase. */
+export function slideTween(scene: Phaser.Scene, imgs: Phaser.GameObjects.Image[], dx: number, ms: number): Promise<void> {
+  if (!imgs.length) return Promise.resolve();
+  return new Promise((res) => scene.tweens.add({ targets: imgs, x: `+=${dx}`, duration: ms, ease: 'Linear', onComplete: () => res() }));
+}
+
 /** Promise wrappers so animation code reads top to bottom. */
 export function wait(scene: Phaser.Scene, ms: number): Promise<void> {
   return new Promise((res) => scene.time.delayedCall(ms, () => res()));

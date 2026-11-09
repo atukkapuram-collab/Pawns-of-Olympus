@@ -9,12 +9,14 @@ import { panel } from '../art/ui';
 import { kleos } from '../core/rules';
 import type { GameState, PatronId } from '../core/types';
 import { LEVELS } from '../data/levels/index';
-import { t } from '../data/strings';
+import { STRINGS, t } from '../data/strings';
 import { DEPTH } from '../view/BoardView';
 import { ensureTexture } from '../view/textures';
 import { addButton, addText, wait, type PixelButton } from '../view/ui';
 import { sfx } from '../audio/sfx';
 import { recordResult } from '../game/save';
+import { afterVictory } from '../game/flow';
+import { music } from '../audio/music';
 import type { BattleScene } from './Battle';
 
 export interface ResultData {
@@ -24,7 +26,7 @@ export interface ResultData {
   patron?: PatronId | null;
 }
 
-const LOSE_LINE: Record<string, string> = {
+const LOSE_FALLBACK: Record<string, string> = {
   heroes: 'Every hero has fallen.',
   ships: 'The ships burn.',
   escort: 'He did not reach the line.',
@@ -51,6 +53,7 @@ export class ResultScene extends Phaser.Scene {
     const battle = this.scene.get('Battle') as BattleScene;
 
     if (data.won) {
+      music.play('victory');
       const stars = kleos(data.state);
       recordResult(level.id, stars);
       this.centerText(y + 14, t('ui.victory'), C.ink);
@@ -68,12 +71,13 @@ export class ResultScene extends Phaser.Scene {
       const outro = t(level.outro ?? '');
       if (outro && outro !== level.outro) this.centerText(y + 72, outro, C.umber, W - 16);
       const bw = 70;
-      if (next) this.buttons.push(addButton(this, x + W - bw - 10, y + H - 30, bw, 14, t('ui.next'), () => this.go(next.id), 'E'));
-      else this.buttons.push(addButton(this, x + W - bw - 10, y + H - 30, bw, 14, 'Title', () => this.toTitle(), 'E'));
+      this.buttons.push(addButton(this, x + W - bw - 10, y + H - 30, bw, 14, next ? t('ui.next') : 'Onward', () => { music.stop(); afterVictory(this, level.id); }, 'E'));
+      this.buttons.push(addButton(this, x + Math.floor(W / 2) - 12, y + H - 30, 24, 14, 'Map', () => this.toMap(level.act)));
       this.buttons.push(addButton(this, x + 10, y + H - 30, bw, 14, t('ui.retry'), () => this.go(level.id, data.patron), 'R'));
     } else {
       this.centerText(y + 18, t('ui.defeat'), C.ink);
-      this.centerText(y + 34, LOSE_LINE[data.state.loseReason ?? 'heroes'] ?? '', C.umber);
+      const why = data.state.loseReason ?? 'heroes';
+      this.centerText(y + 34, STRINGS[`lose.${why}`] ?? LOSE_FALLBACK[why] ?? '', C.umber, W - 16);
       this.buttons.push(addButton(this, x + 10, y + H - 30, 64, 14, t('ui.retry'), () => this.go(level.id, data.patron), 'R'));
       this.buttons.push(addButton(this, x + W - 96 - 10, y + H - 30, 96, 14, t('ui.undoLastTurn'), () => battle.undoLastTurn(), 'Z'));
     }
@@ -98,9 +102,8 @@ export class ResultScene extends Phaser.Scene {
     this.scene.start('Battle', patron === undefined ? { levelId } : { levelId, patron });
   }
 
-  private toTitle(): void {
-    this.scene.stop('Result');
+  private toMap(act: number): void {
     this.scene.stop('Battle');
-    this.scene.start('Title');
+    this.scene.start('LevelSelect', { act });
   }
 }

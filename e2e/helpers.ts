@@ -66,3 +66,21 @@ export async function playSolution(page: Page, level: LevelData, touch: boolean)
     }
   }
 }
+
+/** Click through cutscenes and pick the first offered patron until a battle starts. */
+export async function throughFlow(page: Page, touch: boolean): Promise<void> {
+  for (let i = 0; i < 30; i++) {
+    if (await page.evaluate(() => !!window.__POO__!.battle())) return;
+    const scene = await page.evaluate(() => window.__POO__!.scene());
+    if (scene === 'Cutscene') {
+      await pressButton(page, 'Skip', touch);
+    } else if (scene === 'Patron') {
+      for (const g of ['Zeus', 'Athena', 'Poseidon']) {
+        const p = await page.evaluate((l) => window.__POO__!.buttonToClient(l), g);
+        if (p) { await pressButton(page, g, touch); break; }
+      }
+    }
+    await page.waitForTimeout(150);
+  }
+  throw new Error('flow did not reach a battle');
+}

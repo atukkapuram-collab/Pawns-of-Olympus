@@ -15,9 +15,10 @@ import { tween, wait } from './ui';
 export interface FxSettings {
   shake: boolean;
   reducedMotion: boolean;
+  highContrast: boolean;
 }
 
-export const fxSettings: FxSettings = { shake: true, reducedMotion: false };
+export const fxSettings: FxSettings = { shake: true, reducedMotion: false, highContrast: false };
 
 /** Copy of a buffer with pixels removed by an ordered dither (level 0..16 = how much remains). */
 export function ditherKeep(b: PixelBuffer, level: number): PixelBuffer {

@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import type { LevelData } from '../src/core/level';
-import { collectErrors, playSolution, pressButton, pressTile, settle, waitScene } from './helpers';
+import { collectErrors, playSolution, pressButton, pressTile, settle, throughFlow, waitScene } from './helpers';
 
 const lvl = (id: string) => JSON.parse(readFileSync(`src/data/levels/${id}.json`, 'utf8')) as LevelData;
 const a101 = lvl('a1-01');
@@ -13,7 +13,7 @@ test('title -> Level 1 -> win through the UI -> victory screen', async ({ page }
   await page.goto('./');
   await waitScene(page, 'Title');
   await pressButton(page, 'New campaign', touch);
-  await waitScene(page, 'Battle');
+  await throughFlow(page, touch);
   await settle(page);
   await playSolution(page, a101, touch);
   await waitScene(page, 'Result');
@@ -22,6 +22,7 @@ test('title -> Level 1 -> win through the UI -> victory screen', async ({ page }
   // stars get awarded, then Next leads to Level 2
   await page.waitForTimeout(1000);
   await pressButton(page, 'Next', touch);
+  await throughFlow(page, touch);
   await page.waitForFunction(() => window.__POO__?.battle()?.level.id === 'a1-02');
   expect(errors).toEqual([]);
 });

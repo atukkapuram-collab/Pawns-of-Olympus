@@ -21,6 +21,8 @@ import { ensureTexture } from '../view/textures';
 import { banner, boltFx, popNumber, shake, shatter, slide } from '../view/fx';
 import { wait } from '../view/ui';
 import { sfx } from '../audio/sfx';
+import { music } from '../audio/music';
+import { fxSettings } from '../view/fx';
 
 export interface BattleData {
   levelId: string;
@@ -79,6 +81,7 @@ export class BattleScene extends Phaser.Scene {
       ability: (a) => this.setAbility(a),
     });
 
+    music.play(`act${this.level.act}`);
     this.input.on('pointerdown', (p: Phaser.Input.Pointer) => this.onPointer(p));
     this.input.on('pointermove', (p: Phaser.Input.Pointer) => this.onHover(p));
     this.input.keyboard?.on('keydown', (e: KeyboardEvent) => this.onKey(e));
@@ -95,7 +98,7 @@ export class BattleScene extends Phaser.Scene {
 
   private ui(): BoardUi {
     const s = this.state;
-    const ui: BoardUi = { ...EMPTY_UI, selected: this.selected, cursor: this.cursor, preview: this.preview };
+    const ui: BoardUi = { ...EMPTY_UI, selected: this.selected, cursor: this.cursor, preview: this.preview, highContrast: fxSettings.highContrast };
     const u = this.selected ? unitById(s, this.selected) : undefined;
     if (u && onBoard(u) && s.phase === 'player' && this.mode === 'idle') {
       ui.moveTiles = [...moveOptions(s, u).values()].map((p) => p[p.length - 1]!);
@@ -249,9 +252,10 @@ export class BattleScene extends Phaser.Scene {
     if (k === 'KeyR') return this.hud.restart.press();
     if (k === 'KeyF') return this.hud.favor?.press();
     if (this.busy || s.phase !== 'player') return;
-    if (k === 'Escape') {
+    if (k === 'Escape' || k === 'KeyP') {
       if (this.mode === 'favor') { this.mode = 'idle'; this.waveOrigin = null; }
-      else this.select(null);
+      else if (this.selected && k === 'Escape') this.select(null);
+      else { this.openPause(); return; }
       this.preview = null;
       this.refresh();
       return;
@@ -308,6 +312,13 @@ export class BattleScene extends Phaser.Scene {
     this.preview = null;
     sfx.play('tick');
     this.refresh();
+  }
+
+  openPause(): void {
+    if (this.busy || this.covered) return;
+    sfx.play('ui');
+    this.scene.pause();
+    this.scene.launch('Pause');
   }
 
   toggleFavor(): void {

@@ -8,6 +8,8 @@ import { panel } from '../art/ui';
 import { t } from '../data/strings';
 import { LEVELS } from '../data/levels/index';
 import { loadSave } from '../game/save';
+import { startLevel } from '../game/flow';
+import { music } from '../audio/music';
 import { ensureTexture } from '../view/textures';
 import { addButton, addText, type PixelButton } from '../view/ui';
 import { sfx } from '../audio/sfx';
@@ -31,20 +33,26 @@ export class TitleScene extends Phaser.Scene {
     const buttons: PixelButton[] = [];
     const bw = 110, bx = 160 - bw / 2;
     const hasProgress = Object.keys(save.levels).length > 0;
-    if (hasProgress) buttons.push(addButton(this, bx, y + 54, bw, 14, t('ui.continue'), () => this.start(firstUnwon.id), 'E'));
-    buttons.push(addButton(this, bx, y + (hasProgress ? 71 : 58), bw, 14, t('ui.newCampaign'), () => this.start(LEVELS[0]!.id), hasProgress ? 'N' : 'E'));
+    let by = y + 50;
+    if (hasProgress) { buttons.push(addButton(this, bx, by, bw, 14, t('ui.continue'), () => { sfx.play('select'); this.scene.start('LevelSelect', { levelId: firstUnwon.id }); }, 'E')); by += 16; }
+    buttons.push(addButton(this, bx, by, bw, 14, t('ui.newCampaign'), () => this.start(LEVELS[0]!.id), hasProgress ? 'N' : 'E'));
+    by += 16;
+    buttons.push(addButton(this, bx, by, bw, 14, t('ui.settings'), () => this.scene.start('Settings', { back: 'Title' })));
+    by += 16;
+    buttons.push(addButton(this, bx, by, bw, 14, t('ui.credits'), () => this.scene.start('Credits', {})));
+    music.play('title');
 
     this.input.keyboard?.on('keydown', (e: KeyboardEvent) => {
       sfx.unlock();
       if (e.code === 'Enter' || e.code === 'KeyE' || e.code === 'Space') buttons[0]!.press();
-      if (e.code === 'KeyN') buttons[buttons.length - 1]!.press();
+      if (e.code === 'KeyN' && hasProgress) buttons[1]!.press();
     });
-    this.input.on('pointerdown', () => sfx.unlock());
+    this.input.on('pointerdown', () => { sfx.unlock(); music.play('title'); });
     this.game.events.emit('poo:ready', 'Title');
   }
 
   private start(levelId: string): void {
     sfx.play('select');
-    this.scene.start('Battle', { levelId });
+    startLevel(this, levelId);
   }
 }

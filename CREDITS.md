@@ -12,3 +12,8 @@ All art, the bitmap font, the music and the sound effects are made in code in th
 
 ## Texts
 - Epigraphs (if any) quote public-domain translations only: Samuel Butler (1898), Lang, Leaf & Myers (1883), Alexander Pope (1715–20). Listed here as used.
+
+## Epigraphs used (public domain)
+- "For so were the counsels of Jove fulfilled." Homer, Iliad 1, translated by Samuel Butler (1898).
+- "Like leaves on trees the race of man is found" Homer, Iliad 6, translated by Alexander Pope (1715-20).
+- "Achilles' wrath, to Greece the direful spring" Homer, Iliad 1, translated by Alexander Pope (1715-20).
