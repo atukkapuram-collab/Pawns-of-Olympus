@@ -81,5 +81,10 @@ export function drawBackdrop(kind: Backdrop, w = 320, h = 180): PixelBuffer {
     b.triangle(200, 56, 280, 28, 360, 56, C.sage);
     if (kind === 'walls' || night) troyWall(b, 38, 18, night);
   }
+  // the vase's lower frieze: a zigzag band along the bottom edge
+  const band = night ? C.deepClay : C.ink;
+  b.hline(0, h - 8, w, band);
+  zigzagBand(b, 0, h - 6, w, 4, band);
+  b.hline(0, h - 1, w, band);
   return b;
 }
