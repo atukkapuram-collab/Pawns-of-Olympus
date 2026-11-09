@@ -54,15 +54,15 @@ export function drawGodPortrait(g: GodSpec): PixelBuffer {
   f.triangle(24, 18, 34, 18, 24, 33, g.robeDk);
   hemMeander(f, 13, 35, 46);
   f.hline(11, 50, 27, C.bronze);
-  // arms
-  f.rect(13, 19, 2, 11, C.skin);
-  f.rect(33, 19, 2, 2, C.skin);
-  // head
+  // near arm hangs, forearm bent forward at the hip
+  f.rect(14, 19, 2, 9, C.skin);
+  f.hline(14, 28, 4, C.skin);
+  // head in profile (facing right): hair cap, full face, dot eye, nose
   f.circle(24, 13, 4, C.skin);
-  f.halfCircle(24, 12, 5, g.hair);
-  f.vline(19, 12, 4, g.hair);
-  f.vline(29, 12, 4, g.hair);
-  f.set(25, 13, C.ink); // eye (profile-facing right)
+  f.halfCircle(24, 10, 5, g.hair);
+  f.rect(19, 10, 2, 6, g.hair);
+  f.set(26, 12, C.ink);
+  f.set(29, 13, C.skin);
   g.draw(f);
   b.blit(f.outlined(C.ink), 0, 0);
   g.front?.(b);
@@ -73,23 +73,23 @@ export function drawGodPortrait(g: GodSpec): PixelBuffer {
 
 export const GODS: Record<string, GodSpec> = {
   zeus: {
-    halo: C.bronze, bg: C.ink, bgLow: C.darkUmber, robe: C.bone, robeDk: C.boneDk, hair: C.bone,
+    halo: C.bronze, bg: C.ink, bgLow: C.darkUmber, robe: C.bone, robeDk: C.boneDk, hair: C.ink,
     draw: (f) => {
-      // beard: a cream wedge under the face
-      f.triangle(19.5, 15, 28.5, 15, 24, 24, C.bone);
-      f.triangle(24, 15, 28.5, 15, 24, 24, C.boneDk);
-      f.rect(22, 15, 4, 1, C.skin); // mouth gap
-      // laurel: gold leaves along the hair
-      for (const [x, y] of [[19, 10], [20, 9], [21, 8], [27, 8], [28, 9], [29, 10]] as const) f.set(x, y, C.bronze);
-      // the thunderbolt: a zigzag held high in the right hand
-      f.rect(32, 10, 3, 10, C.skin);
-      const bolt = [[36, 0, 3], [35, 1, 3], [34, 2, 3], [33, 3, 7], [36, 4, 3], [35, 5, 3], [34, 6, 3], [33, 7, 3]] as const;
+      // black-figure beard: an ink wedge under the jaw
+      f.triangle(21.5, 16, 29, 16, 24.5, 24, C.ink);
+      f.hline(25, 16, 3, C.skin); // lip line stays skin
+      // laurel: bronze leaves on the hair
+      for (const [x, y] of [[20, 7], [21, 6], [23, 5], [25, 5], [27, 6], [28, 7]] as const) f.set(x, y, C.bronze);
+      // raised arm and the thunderbolt, held clear of the halo
+      f.rect(33, 19, 2, 2, C.skin);
+      f.rect(34, 10, 2, 10, C.skin);
+      const bolt = [[39, 1, 2], [38, 2, 2], [37, 3, 2], [36, 4, 5], [38, 5, 2], [37, 6, 2], [36, 7, 2]] as const;
       for (const [x, y, w] of bolt) f.hline(x, y + 1, w, C.goldHi);
-      f.set(37, 1, C.bronze).set(35, 8, C.bronze);
+      f.set(40, 1, C.bronze).set(36, 9, C.bronze);
     },
     front: (b) => {
-      // cloud bank: bone half-discs along the bottom
-      for (const [x, r] of [[5, 6], [16, 8], [31, 7], [43, 6]] as const) b.circle(x, 55, r, C.bone, { half: 'top', shade: C.boneDk, shadeFrom: 2 });
+      // cloud bank in sand, below the robe hem
+      for (const [x, r] of [[4, 5], [14, 6], [34, 6], [44, 5]] as const) b.circle(x, 56, r, C.sand, { half: 'top', shade: C.boneDk, shadeFrom: 2 });
     },
   },
 };

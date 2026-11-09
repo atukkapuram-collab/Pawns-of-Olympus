@@ -88,13 +88,17 @@ export function rockTile(variant: number): PixelBuffer {
  * The plinth under the board's front edge: the board sits on a painted vase
  * band (ink meander on clay) like a frieze. Width = board width.
  */
+export const PLINTH_H = 14;
 export function boardPlinth(w: number): PixelBuffer {
-  const b = new PixelBuffer(w, 12);
+  const b = new PixelBuffer(w, PLINTH_H);
   b.rect(0, 0, w, 12, C.clay);
-  b.hline(0, 0, w, C.umber);
-  meanderBand(b, 0, 2, w, C.ink);
+  b.hline(0, 0, w, C.ink);
+  meanderBand(b, 1, 1, w - 2, C.ink);
   b.hline(0, 10, w, C.deepClay);
   b.hline(0, 11, w, C.ink);
+  b.vline(0, 0, 12, C.ink);
+  b.vline(w - 1, 0, 12, C.ink);
+  b.rect(1, 12, w - 2, 2, C.darkUmber); // the slab's shadow on the ground
   return b;
 }
 
@@ -161,7 +165,7 @@ export function lightPool(): PixelBuffer {
 /** Overlay: reachable tile. Gold dither + gold inner frame. */
 export function moveOverlay(): PixelBuffer {
   const b = new PixelBuffer(TILE_W, 16);
-  b.ditherFill(1, 1, 23, 15, C.goldHi, 6);
+  b.ditherFill(1, 1, 23, 15, C.goldHi, 4);
   b.frame(2, 2, 21, 13, C.goldHi);
   return b;
 }
@@ -175,17 +179,27 @@ export function threatOverlay(highContrast = false): PixelBuffer {
   return b;
 }
 
-/** Overlay: selection brackets in gold. */
+/**
+ * Selection brackets: cream arms with an ink backing, sitting 1px outside the
+ * tile (draw at tile origin - 1). Drawn AFTER units so they are never hidden.
+ */
 export function selectOverlay(): PixelBuffer {
-  const b = new PixelBuffer(TILE_W, 16);
-  const L = 5;
-  for (const [x, y, dx, dy] of [[0, 0, 1, 1], [23, 0, -1, 1], [0, 15, 1, -1], [23, 15, -1, -1]] as const) {
+  const b = new PixelBuffer(TILE_W + 2, 18);
+  const W = TILE_W + 2, H = 18, L = 5;
+  for (const [x, y, dx, dy] of [[0, 0, 1, 1], [W - 1, 0, -1, 1], [0, H - 1, 1, -1], [W - 1, H - 1, -1, -1]] as const) {
     for (let i = 0; i < L; i++) {
-      b.set(x + dx * i, y, C.goldHi).set(x, y + dy * i, C.goldHi);
-      b.set(x + dx * i, y + dy, C.bronze).set(x + dx, y + dy * i, C.bronze);
+      b.set(x + dx * i, y + dy, C.ink).set(x + dx, y + dy * i, C.ink);
     }
+    for (let i = 0; i < L; i++) b.set(x + dx * i, y, C.cream).set(x, y + dy * i, C.cream);
   }
   return b;
+}
+
+/** Down-chevron that bobs over the selected unit's head. 7x5 with ink outline. */
+export function selectChevron(): PixelBuffer {
+  const b = new PixelBuffer(7, 5);
+  b.hline(1, 1, 5, C.cream).hline(2, 2, 3, C.cream).set(3, 3, C.cream);
+  return b.outlined(C.ink);
 }
 
 /** Background frieze strip of sea waves for shore levels. */

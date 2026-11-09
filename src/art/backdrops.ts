@@ -59,7 +59,7 @@ export function drawBackdrop(kind: Backdrop, w = 320, h = 180): PixelBuffer {
     b.circle(258, 22, 9, C.bone, { shade: C.boneDk, shadeFrom: 4 }); // moon
     for (const [x, y] of [[30, 12], [70, 26], [118, 9], [200, 18], [300, 30], [160, 34]] as const) b.set(x, y, C.cream);
   } else {
-    skyBands(b, [[C.cream, 26], [C.sand, 22], [C.clayLt, h - 48]]);
+    skyBands(b, [[C.cream, 26], [C.sand, 22], [C.deepClay, h - 48]]);
     b.circle(262, 26, 13, C.sun); // flat disc sun, no glow
   }
 

@@ -82,6 +82,20 @@ export const NIGHT_REMAP: Partial<Record<number, number>> = {
   [C.boneDk]: C.deepClay,
 };
 
+/**
+ * Red-figure remap for FIGURES at night: bodies and armor turn sun-orange on
+ * ink, keeping only the crest colors (red / purple) as team accents.
+ */
+export const FIGURE_NIGHT_REMAP: Partial<Record<number, number>> = {
+  ...NIGHT_REMAP,
+  [C.blue]: C.sun, [C.olive]: C.sun, [C.wine]: C.sun, [C.sand]: C.sun,
+  [C.blueDk]: C.deepClay, [C.oliveDk]: C.deepClay, [C.wineDk]: C.deepClay,
+  [C.bronze]: C.sun, [C.iron]: C.sun, [C.umber]: C.deepClay,
+  [C.bronzeDk]: C.deepClay, [C.ironDk]: C.deepClay, [C.darkUmber]: C.deepClay,
+  [C.goldHi]: C.sand, [C.ironHi]: C.sand, [C.clayLt]: C.sand,
+  [C.skin]: C.sun, [C.bone]: C.sand,
+};
+
 /** Cream flash used for hit frames. Everything opaque becomes cream except outlines. */
 export function flashMap(): Partial<Record<number, number>> {
   const m: Partial<Record<number, number>> = {};

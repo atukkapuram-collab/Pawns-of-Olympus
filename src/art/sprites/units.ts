@@ -27,7 +27,7 @@ export const FIGURES: Record<string, FigureSpec> = {
     skin: C.skin, tunic: C.sand, tunicDk: C.deepClay, metal: C.umber, metalDk: C.darkUmber, metalHi: C.clayLt,
     crest: C.umber, emblem: C.ink, outline: C.ink, headgear: 'pilos', shield: 'round', weapon: 'spear',
   },
-  // Bronze crest edged gold, sand tunic? No: red-brown (threat would clash). Deep clay tunic, long spear, boar zigzag shield.
+  // Gold crest, deep clay tunic, long spear, round shield with boar-tusk marks.
   diomedes: {
     skin: C.skin, tunic: C.deepClay, tunicDk: C.umber, ...bronze, crest: C.goldHi, emblem: C.ink, outline: C.ink,
     headgear: 'crest', shield: 'round', weapon: 'longspear',
@@ -54,12 +54,13 @@ export const FIGURES: Record<string, FigureSpec> = {
 
 /** Odysseus' shield eye; Diomedes' boar-tusk zigzag. Small, but they make the hero. */
 FIGURES.odysseus!.extra = (b: PixelBuffer, oy: number, pose: Pose) => {
-  const cx = 6 + (pose === 'strike' ? 1 : 0), cy = 17 + oy;
-  b.set(cx - 1, cy, C.bone).set(cx + 1, cy, C.bone);
+  const cx = 5 + (pose === 'strike' ? 1 : 0), cy = 19 + oy;
+  b.set(cx, cy - 1, C.bone); // the ink boss becomes an eye
+  b.set(cx - 2, cy, C.ink).set(cx + 1, cy, C.ink);
 };
 FIGURES.diomedes!.extra = (b: PixelBuffer, oy: number, pose: Pose) => {
-  const cx = 6 + (pose === 'strike' ? 1 : 0), cy = 17 + oy;
-  b.set(cx - 3, cy - 1, C.ink).set(cx - 2, cy, C.ink).set(cx + 2, cy, C.ink).set(cx + 3, cy - 1, C.ink);
+  const cx = 5 + (pose === 'strike' ? 1 : 0), cy = 19 + oy;
+  b.set(cx - 3, cy + 1, C.ink).set(cx - 2, cy + 2, C.ink).set(cx + 1, cy + 2, C.ink).set(cx + 2, cy + 1, C.ink);
 };
 
 export const TROJANS = new Set(['spearman', 'archer', 'shieldbearer', 'chariot', 'hector', 'paris']);

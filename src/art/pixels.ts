@@ -264,27 +264,19 @@ export class PixelBuffer {
 // ---------------------------------------------------------------------------
 
 /**
- * Running meander (Greek key). Height 7: a 1px rule above and below and a 5px
- * key in between. Period 8px. Colors: `fg` key on whatever is underneath.
+ * Running meander (Greek key). Height 9: a 1px rule, a 1px gap, a 5px
+ * interlocking key, a 1px gap, a 1px rule. Period 8px. Drawn in fg over whatever is underneath.
  */
+export const MEANDER_H = 9;
 export function meanderBand(b: PixelBuffer, x: number, y: number, w: number, fg: ColorIndex, rules = true): void {
-  // One 8x5 key unit, drawn left to right; adjacent units join into a running key.
-  const unit = [
-    '#####...',
-    '#...#...',
-    '#.#.#...',
-    '#.###...',
-    '#.....##',
-  ];
-  // the trailing '##' bridges to the next unit's left stem
-  const top = rules ? 1 : 0;
+  const unit = ['#.#####.', '#.#...#.', '#.#.#.#.', '#...#.#.', '#####.#.'];
   if (rules) {
     b.hline(x, y, w, fg);
-    b.hline(x, y + 6, w, fg);
+    b.hline(x, y + 8, w, fg);
   }
   for (let i = 0; i < w; i++) {
     const col = i % 8;
-    for (let r = 0; r < 5; r++) if (unit[r]![col] === '#') b.set(x + i, y + top + r, fg);
+    for (let r = 0; r < 5; r++) if (unit[r]![col] === '#') b.set(x + i, y + 2 + r, fg);
   }
 }
 

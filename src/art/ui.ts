@@ -24,16 +24,16 @@ export function panel(w: number, h: number, style: PanelStyle = 'clay', meander 
   b.rect(0, 0, w, h, s.fill);
   b.frame(0, 0, w, h, C.ink);
   b.frame(2, 2, w - 4, h - 4, s.rule);
-  if (meander && h >= 24) {
+  if (meander && h >= 28) {
     meanderBand(b, 3, 3, w - 6, s.band);
-    meanderBand(b, 3, h - 10, w - 6, s.band);
+    meanderBand(b, 3, h - 12, w - 6, s.band);
   }
   return b;
 }
 
 /** Content inset for a panel (where text can go). */
 export function panelInset(meander: boolean): { x: number; top: number; bottom: number } {
-  return meander ? { x: 6, top: 13, bottom: 13 } : { x: 5, top: 5, bottom: 5 };
+  return meander ? { x: 6, top: 15, bottom: 15 } : { x: 5, top: 5, bottom: 5 };
 }
 
 export type ButtonState = 'idle' | 'hover' | 'down' | 'disabled';
@@ -70,7 +70,7 @@ export function button(w: number, h: number, label: string, state: ButtonState =
 
 /** Decorative frieze bands for screen borders. */
 export function frieze(w: number, kind: 'meander' | 'checker' | 'rosette', fg: ColorIndex = C.ink, bg: ColorIndex = C.clay): PixelBuffer {
-  const h = kind === 'meander' ? 7 : kind === 'checker' ? 4 : 3;
+  const h = kind === 'meander' ? 9 : kind === 'checker' ? 4 : 3;
   const b = new PixelBuffer(w, h);
   b.rect(0, 0, w, h, bg);
   if (kind === 'meander') meanderBand(b, 0, 0, w, fg);

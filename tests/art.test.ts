@@ -87,9 +87,9 @@ describe('pixel primitives', () => {
   });
 
   it('meander band is periodic', () => {
-    const b = new PixelBuffer(32, 7);
+    const b = new PixelBuffer(32, 9);
     meanderBand(b, 0, 0, 32, 6);
-    for (let y = 0; y < 7; y++) for (let x = 0; x < 24; x++) expect(b.get(x, y)).toBe(b.get(x + 8, y));
+    for (let y = 0; y < 9; y++) for (let x = 0; x < 24; x++) expect(b.get(x, y)).toBe(b.get(x + 8, y));
   });
 
   it('figures fit their 24x32 cell with feet on row 30', () => {

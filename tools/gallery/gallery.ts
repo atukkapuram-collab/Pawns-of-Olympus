@@ -2,7 +2,7 @@
  * Art gallery (morning art review page). `npm run dev` → /gallery.html.
  * Every asset is drawn from its recipe and shown at integer zoom.
  */
-import { C, PALETTE_HEX, NIGHT_REMAP, flashMap, type ColorIndex } from '../../src/art/palette';
+import { C, PALETTE_HEX, FIGURE_NIGHT_REMAP, flashMap, type ColorIndex } from '../../src/art/palette';
 import { PixelBuffer } from '../../src/art/pixels';
 import { textBuffer } from '../../src/art/font';
 import { buildFigureFrames, FIGURES } from '../../src/art/sprites/units';
@@ -155,7 +155,7 @@ root.appendChild(sub);
   item(row, drawBackdrop('walls'), 'walls', 2);
   const night = drawBackdrop('night');
   item(row, night, 'night (red-figure)', 2);
-  const nightAchilles = buildFigureFrames('achilles').idle0.paletteSwap(NIGHT_REMAP);
+  const nightAchilles = buildFigureFrames('achilles').idle0.paletteSwap(FIGURE_NIGHT_REMAP);
   item(row, nightAchilles, 'achilles, night remap', 4);
 }
 
