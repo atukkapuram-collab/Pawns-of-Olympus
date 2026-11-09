@@ -13,6 +13,7 @@ export function makeConfig(scenes: Phaser.Types.Scenes.SceneType[]): Phaser.Type
     pixelArt: true,
     roundPixels: true,
     antialias: false,
+    preserveDrawingBuffer: true, // lets screenshots read exact 1x pixels
     disableContextMenu: true,
     // We size the canvas ourselves (see scaler.ts) for exact integer scaling.
     scale: { mode: Phaser.Scale.NONE, width: GAME_W, height: GAME_H },

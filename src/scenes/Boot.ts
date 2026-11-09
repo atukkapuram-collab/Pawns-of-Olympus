@@ -1,17 +1,23 @@
 import Phaser from 'phaser';
+import { loadSettings } from '../game/save';
+import { sfx } from '../audio/sfx';
+import { fxSettings } from '../view/fx';
 
+/** Applies saved settings, then hands over to the title (or a ?level= deep link). */
 export class BootScene extends Phaser.Scene {
   constructor() {
     super('Boot');
   }
 
   create(): void {
-    // M0 placeholder: a single meander-ish stripe proves integer scaling is crisp.
-    const g = this.add.graphics();
-    for (let x = 0; x < 320; x += 8) {
-      g.fillStyle(0xb5783f).fillRect(x, 170, 8, 2);
-      g.fillStyle(0xe0a83a).fillRect(x + 2, 170, 4, 1);
-    }
-    this.game.events.emit('poo:ready', 'Boot');
+    const st = loadSettings();
+    sfx.setVolume(st.sound);
+    sfx.setMuted(st.muted);
+    fxSettings.shake = st.shake;
+    fxSettings.reducedMotion = st.reducedMotion;
+    const params = new URLSearchParams(window.location.search);
+    const level = params.get('level');
+    if (level) this.scene.start('Battle', { levelId: level });
+    else this.scene.start('Title');
   }
 }

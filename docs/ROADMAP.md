@@ -8,7 +8,7 @@ Strict order. M3 is the playable-slice safety net. Mark items `[x]` when accepte
   *Accept:* gallery shows a cohesive mini style sheet clearly better than the mockups; palette test passes.
 - [x] **M2 Rules engine** — board, units, move/strike/push/swap, intents, ordered enemy resolution, objectives, undo, win/lose, Kleos; level JSON + validator with solution replay.
   *Accept:* 3 test levels validate; every rule has tests; >90% coverage of `src/core`.
-- [ ] **M3 Playable slice** — board render, units, intent markers, selection + move range, HUD (turn, End turn, Undo, Restart), basic animations, mouse + touch input, Levels 1–3 from a minimal title, victory screen.
+- [x] **M3 Playable slice** — board render, units, intent markers, selection + move range, HUD (turn, End turn, Undo, Restart), basic animations, mouse + touch input, Levels 1–3 from a minimal title, victory screen.
   *Accept:* `npm run check` passes incl. desktop and touch e2e that win Level 1 through the UI; screenshots captured.
 - [ ] **M4 Full cast** — all heroes, enemies, tiles, patron favors and Trojan god events, each with art, animation, sound and tests.
 - [ ] **M5 Campaign** — all 15 levels validated, with par and Kleos; difficulty ramp; level linter.
