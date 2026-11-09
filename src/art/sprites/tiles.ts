@@ -75,11 +75,10 @@ export function rockTile(variant: number): PixelBuffer {
   b.set(4 + (variant % 3) * 6, 4, C.deepClay).set(5 + (variant % 3) * 6, 4, C.deepClay);
   b.rect(0, 10, TILE_W, 16, C.darkUmber);
   b.hline(0, 10, TILE_W, C.ink);
-  b.hline(0, 17, TILE_W, C.ink);
-  const off = variant % 2 === 0 ? 8 : 14;
-  b.vline(off, 11, 6, C.ink);
-  b.vline((off + 12) % 24, 18, 7, C.ink);
-  b.set(1, 12, C.umber).set(1, 13, C.umber).set(1, 19, C.umber);
+  const cx = 5 + (variant % 3) * 6;
+  b.line(cx, 11, cx + 2, 15, C.ink).line(cx + 2, 15, cx + 1, 19, C.ink);
+  if (variant !== 1) b.line(cx + 9, 18, cx + 11, 22, C.ink);
+  b.set(1, 12, C.umber).set(1, 13, C.umber).set(22, 11, C.umber);
   b.hline(0, 25, TILE_W, C.ink);
   return b;
 }
@@ -183,14 +182,14 @@ export function threatOverlay(highContrast = false): PixelBuffer {
  * Selection brackets: cream arms with an ink backing, sitting 1px outside the
  * tile (draw at tile origin - 1). Drawn AFTER units so they are never hidden.
  */
-export function selectOverlay(): PixelBuffer {
-  const b = new PixelBuffer(TILE_W + 2, 18);
-  const W = TILE_W + 2, H = 18, L = 5;
+export function selectOverlay(W = TILE_W + 2, H = 18): PixelBuffer {
+  const b = new PixelBuffer(W, H);
+  const L = 5;
   for (const [x, y, dx, dy] of [[0, 0, 1, 1], [W - 1, 0, -1, 1], [0, H - 1, 1, -1], [W - 1, H - 1, -1, -1]] as const) {
     for (let i = 0; i < L; i++) {
-      b.set(x + dx * i, y + dy, C.ink).set(x + dx, y + dy * i, C.ink);
+      b.set(x + dx * i, y + dy, C.goldHi).set(x + dx, y + dy * i, C.goldHi);
     }
-    for (let i = 0; i < L; i++) b.set(x + dx * i, y, C.cream).set(x, y + dy * i, C.cream);
+    for (let i = 0; i < L; i++) b.set(x + dx * i, y, C.ink).set(x, y + dy * i, C.ink);
   }
   return b;
 }

@@ -5,7 +5,8 @@
 import { C, PALETTE_HEX, FIGURE_NIGHT_REMAP, flashMap, type ColorIndex } from '../../src/art/palette';
 import { PixelBuffer } from '../../src/art/pixels';
 import { textBuffer } from '../../src/art/font';
-import { buildFigureFrames, FIGURES } from '../../src/art/sprites/units';
+import { ALL_UNIT_TYPES, buildFigureFrames } from '../../src/art/sprites/units';
+import { shipSprite } from '../../src/art/sprites/extras';
 import { POSES } from '../../src/art/sprites/figure';
 import { buildPortrait, GODS } from '../../src/art/sprites/gods';
 import * as T from '../../src/art/sprites/tiles';
@@ -100,13 +101,20 @@ root.appendChild(sub);
 // ---- Units ----
 {
   const row = section('Heroes and Trojans', 'Poses: idle 0, idle 1 (1px breath), wind-up, strike, hit flash.');
-  for (const type of Object.keys(FIGURES)) {
+  for (const type of ALL_UNIT_TYPES) {
     const fr = buildFigureFrames(type);
-    const strip = new PixelBuffer(24 * 5 + 4 * 4, 32);
-    POSES.forEach((p, i) => strip.blit(fr[p], i * 28, 0));
-    strip.blit(fr.idle0.paletteSwap(flashMap()), 4 * 28, 0);
+    const cw = fr.idle0.w, ch = fr.idle0.h;
+    const strip = new PixelBuffer((cw + 4) * 5, ch);
+    POSES.forEach((p, i) => strip.blit(fr[p], i * (cw + 4), 0));
+    strip.blit(fr.idle0.paletteSwap(flashMap()), 4 * (cw + 4), 0);
     item(row, strip, type, 4);
   }
+}
+
+{
+  const row = section('Objects');
+  item(row, shipSprite(), 'ship');
+  item(row, shipSprite(true), 'ship, damaged');
 }
 
 // ---- Gods ----

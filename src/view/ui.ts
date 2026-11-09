@@ -35,6 +35,8 @@ export interface PixelButton {
   setEnabled(on: boolean): void;
   setLabel(label: string): void;
   setVisible(on: boolean): void;
+  /** Latched look (gold frame) for the chosen option in a toggle group. */
+  setActive(on: boolean): void;
   readonly enabled: boolean;
   /** Programmatic press (keyboard shortcut). */
   press(): void;
@@ -59,11 +61,12 @@ export function addButton(
   let enabled = true;
   let hover = false;
   let down = false;
+  let active = false;
   const tex = (st: ButtonState) => ensureTexture(scene, `btn|${w}|${h}|${current}|${key ?? ''}|${st}`, () => buttonArt(w, h, current, st, key));
   const img = scene.add.image(Math.round(x), Math.round(y), tex('idle')).setOrigin(0, 0);
   img.setInteractive({ useHandCursor: true });
   img.setData('label', label);
-  const refresh = () => img.setTexture(tex(!enabled ? 'disabled' : down ? 'down' : hover ? 'hover' : 'idle'));
+  const refresh = () => img.setTexture(tex(!enabled ? 'disabled' : down ? 'down' : hover || active ? 'hover' : 'idle'));
   img.on('pointerover', () => { hover = true; refresh(); });
   img.on('pointerout', () => { hover = false; down = false; refresh(); });
   img.on('pointerdown', (_p: Phaser.Input.Pointer, _lx: number, _ly: number, ev: Phaser.Types.Input.EventData) => {
@@ -84,6 +87,7 @@ export function addButton(
     get enabled() { return enabled; },
     setEnabled(on) { if (on !== enabled) { enabled = on; refresh(); } },
     setLabel(l) { if (l !== current) { current = l; img.setData('label', l); refresh(); } },
+    setActive(on) { if (on !== active) { active = on; refresh(); } },
     setVisible(on) { img.setVisible(on); if (on) img.setInteractive(); else img.disableInteractive(); },
     press() {
       if (!enabled || !img.visible) return;

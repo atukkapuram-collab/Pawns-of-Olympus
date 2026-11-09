@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { CLEAR, PALETTE_HEX, PALETTE_RGB, NIGHT_REMAP, flashMap } from '../src/art/palette';
 import { PixelBuffer, ditherOn, meanderBand } from '../src/art/pixels';
 import { FONT, drawText, glyph, hasGlyph, measureLine, wrapText } from '../src/art/font';
-import { buildFigureFrames, FIGURES } from '../src/art/sprites/units';
+import { ALL_UNIT_TYPES, buildFigureFrames } from '../src/art/sprites/units';
+import { shipSprite } from '../src/art/sprites/extras';
 import { POSES } from '../src/art/sprites/figure';
 import { buildPortrait, GODS } from '../src/art/sprites/gods';
 import * as T from '../src/art/sprites/tiles';
@@ -13,7 +14,8 @@ import { STRINGS } from '../src/data/strings';
 
 function allSprites(): Array<[string, PixelBuffer]> {
   const out: Array<[string, PixelBuffer]> = [];
-  for (const type of Object.keys(FIGURES)) {
+  out.push(['ship', shipSprite()], ['ship.damaged', shipSprite(true)]);
+  for (const type of ALL_UNIT_TYPES) {
     const fr = buildFigureFrames(type);
     for (const p of POSES) out.push([`${type}.${p}`, fr[p]]);
   }

@@ -9,7 +9,7 @@ import { PixelBuffer } from '../art/pixels';
 import * as T from '../art/sprites/tiles';
 import { buildFigureFrames } from '../art/sprites/units';
 import { POSES, type Pose } from '../art/sprites/figure';
-import { cursorOverlay, pathDot, plagueOverlay, shipSprite, targetOverlay, threatFrame } from '../art/sprites/extras';
+import { cursorOverlay, mistOverlay, pathDot, plagueOverlay, shipSprite, targetOverlay, threatFrame, waveOverlay } from '../art/sprites/extras';
 import { hpPips, intentGlyph, orderBadge, type IntentGlyph } from '../art/markers';
 import { traceAttack } from '../core/combat';
 import { onBoard } from '../core/board';
@@ -28,6 +28,8 @@ export interface BoardUi {
   preview: { x: number; y: number } | null;
   showIntents: boolean;
   highContrast: boolean;
+  /** Poseidon: the wave's line and direction being aimed. */
+  wave?: { x: number; y: number; dir: 'up' | 'down' | 'left' | 'right' } | undefined;
 }
 
 export const EMPTY_UI: BoardUi = { selected: null, moveTiles: [], targetTiles: [], cursor: null, preview: null, showIntents: true, highContrast: false };
@@ -135,13 +137,20 @@ export class BoardView {
   // ------------------------------------------------------------------ units
 
   private addUnit(u: Unit): void {
-    const o = u.type === 'ship' ? this.shipOrigin(u.x, u.y) : unitOrigin(this.layout, u.x, u.y);
+    const o = this.spriteOrigin(u.type, u.x, u.y);
     const sprite = this.scene.add.image(o.px, o.py, this.unitTex(u.type, 'idle0')).setOrigin(0, 0);
     const pips = this.scene.add.image(0, 0, this.pipsTex(u)).setOrigin(0, 0);
     const phase = (u.x * 3 + u.y * 5) % 2;
     this.units.set(u.id, { sprite, pips, type: u.type, phase });
     this.placeUnit(u.id, u.x, u.y);
     if (!onBoard(u)) { sprite.setVisible(false); pips.setVisible(false); }
+  }
+
+  /** Top-left for a unit sprite standing on (x, y); big sprites are centred and rise higher. */
+  spriteOrigin(type: string, x: number, y: number): { px: number; py: number } {
+    if (type === 'ship') return this.shipOrigin(x, y);
+    const o = unitOrigin(this.layout, x, y);
+    return type === 'hector' ? { px: o.px - 4, py: o.py - 8 } : o;
   }
 
   shipOrigin(x: number, y: number): { px: number; py: number } {
@@ -158,7 +167,7 @@ export class BoardView {
   placeUnit(id: string, x: number, y: number): void {
     const v = this.units.get(id);
     if (!v) return;
-    const o = v.type === 'ship' ? this.shipOrigin(x, y) : unitOrigin(this.layout, x, y);
+    const o = this.spriteOrigin(v.type, x, y);
     v.sprite.setPosition(o.px, o.py).setDepth(this.rowDepth(y) + 5);
     this.placePips(id);
   }
@@ -167,7 +176,7 @@ export class BoardView {
     const v = this.units.get(id);
     if (!v) return;
     const top = v.type === 'ship' ? 2 : 0;
-    v.pips.setPosition(Math.round(v.sprite.x + 12 - Math.floor(v.pips.width / 2)), Math.round(v.sprite.y - 5 + top)).setDepth(DEPTH.markers - 1);
+    v.pips.setPosition(Math.round(v.sprite.x + v.sprite.width / 2 - Math.floor(v.pips.width / 2)), Math.round(v.sprite.y - 5 + top)).setDepth(v.sprite.depth + 1);
   }
 
   setPose(id: string, pose: Pose | 'flash'): void {
@@ -262,6 +271,7 @@ export class BoardView {
             overlay('ov|threatFrame', threatFrame, h.x, h.y, occupant.sprite.depth + 1);
             const bx = Math.round(occupant.sprite.x + 18 + n * 10), by = Math.round(occupant.sprite.y - 8);
             this.add(this.scene.add.image(bx, by, badge).setOrigin(0, 0).setDepth(DEPTH.markers));
+            this.add(this.scene.add.image(bx + 9, by - 1, this.tex(`chip|${glyphKey}`, () => intentGlyph(GLYPH[enemy.intent!.kind]!, enemy.intent!.dir, C.ink).paletteSwap({ [C.ink]: C.red }).outlined(C.ink))).setOrigin(0, 0).setDepth(DEPTH.markers));
           } else {
             const o = at(h.x, h.y);
             this.add(this.scene.add.image(o.px + 7, o.py + 2, glyph).setOrigin(0, 0).setDepth(DEPTH.markers - 1));
@@ -271,6 +281,20 @@ export class BoardView {
       });
     }
 
+    if (ui.wave) {
+      const horiz = ui.wave.dir === 'left' || ui.wave.dir === 'right';
+      const n = horiz ? s.width : s.height;
+      for (let i = 0; i < n; i++) overlay('ov|wave', waveOverlay, horiz ? i : ui.wave.x, horiz ? ui.wave.y : i, DEPTH.markers - 4);
+      for (const d of ['up', 'right', 'down', 'left'] as const) {
+        const nx = ui.wave.x + (d === 'left' ? -1 : d === 'right' ? 1 : 0), ny = ui.wave.y + (d === 'up' ? -1 : d === 'down' ? 1 : 0);
+        if (nx < 0 || ny < 0 || nx >= s.width || ny >= s.height) continue;
+        const o = at(nx, ny);
+        const col = d === ui.wave.dir ? C.cream : C.sea;
+        this.add(this.scene.add.image(o.px + 6, o.py + 2, this.tex(`gl|wavearrow|${d}|${col}`, () => intentGlyph('charge', d, col).outlined(C.ink))).setOrigin(0, 0).setDepth(DEPTH.markers + 2));
+      }
+    }
+    // Aphrodite: where a misted Trojan will return
+    for (const u of s.units) if (u.mist && u.alive) overlay('ov|mist', mistOverlay, u.mist.x, u.mist.y, DEPTH.overlay + 1);
     for (const t of ui.targetTiles) overlay('ov|target', targetOverlay, t.x, t.y, DEPTH.markers - 3);
     if (ui.preview) overlay('ov|target', targetOverlay, ui.preview.x, ui.preview.y, DEPTH.markers - 3);
     if (ui.cursor) overlay('ov|cursor', cursorOverlay, ui.cursor.x, ui.cursor.y, DEPTH.select - 1);
@@ -279,8 +303,10 @@ export class BoardView {
     const sel = ui.selected ? s.units.find((u) => u.id === ui.selected) : undefined;
     if (sel && onBoard(sel)) {
       const o = at(sel.x, sel.y);
-      this.add(this.scene.add.image(o.px - 1, o.py - 1, this.tex('ov|select', T.selectOverlay)).setOrigin(0, 0).setDepth(DEPTH.select));
       const v = this.units.get(sel.id)!;
+      const bw = v.sprite.width + 2, bh = v.sprite.height - 1;
+      this.add(this.scene.add.image(v.sprite.x - 1, v.sprite.y + 1, this.tex(`ov|select|${bw}|${bh}`, () => T.selectOverlay(bw, bh))).setOrigin(0, 0).setDepth(DEPTH.select));
+      void o;
       if (!this.chevron) this.chevron = this.scene.add.image(0, 0, this.tex('ov|chevron', T.selectChevron)).setOrigin(0, 0).setDepth(DEPTH.select);
       this.chevron.setVisible(true).setPosition(Math.round(v.sprite.x + 9), Math.round(v.sprite.y - 12 + (this.frame % 2)));
     } else this.chevron?.setVisible(false);

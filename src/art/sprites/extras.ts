@@ -62,3 +62,19 @@ export function shipSprite(damaged = false): PixelBuffer {
   }
   return b.outlined(C.ink);
 }
+
+/** Poseidon's line: sea-colored dither with a foam edge. */
+export function waveOverlay(): PixelBuffer {
+  const b = new PixelBuffer(TILE_W, 16);
+  b.ditherFill(1, 1, 23, 15, C.sea, 6);
+  b.hline(1, 1, 23, C.bone);
+  return b;
+}
+
+/** Aphrodite's mist: rose dither where a rescued Trojan will return. */
+export function mistOverlay(): PixelBuffer {
+  const b = new PixelBuffer(TILE_W, 16);
+  b.ditherFill(1, 1, 23, 15, C.rose, 6);
+  b.frame(1, 1, 23, 15, C.rose);
+  return b;
+}

@@ -1,7 +1,7 @@
 /**
- * Battle HUD: an ink title strip top-left, and a clay column on the right
- * with a cream info card (selected/hovered unit), the numbered Trojan action
- * order, the patron favor, End turn, Undo and Restart.
+ * Battle HUD: an ink title strip top-left (level name), and a clay column on
+ * the right: turn/par, a cream info card (selected or hovered unit), the
+ * numbered Trojan action order, then the patron favor, End turn, Undo, Restart.
  */
 import Phaser from 'phaser';
 import { C } from '../art/palette';
@@ -10,21 +10,22 @@ import { hpPips, intentGlyph, orderBadge } from '../art/markers';
 import { meanderBand } from '../art/pixels';
 import { UNITS } from '../data/units';
 import { t } from '../data/strings';
-import { intentOrder } from '../core/rules';
-import type { GameState, Unit } from '../core/types';
+import { abilitiesOf, intentOrder } from '../core/rules';
+import type { Ability, GameState, Unit } from '../core/types';
 import { HUD_W, HUD_X } from './layout';
 import { DEPTH } from './BoardView';
 import { addButton, addText, setText, type PixelButton } from './ui';
 import { ensureTexture } from './textures';
 
-const ROMAN = ['', 'I', 'II', 'III'];
-const INTENT_NAME: Record<string, string> = { thrust: 'thrust', arrow: 'arrow', charge: 'charge', sweep: 'sweep' };
+const ORD = ['', '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th'];
+const ABILITY_LABEL: Record<Ability, string> = { strike: 'Strike', swap: 'Swap', push: 'Push' };
 
 export interface HudHandlers {
   endTurn(): void;
   undo(): void;
   restart(): void;
   favor(): void;
+  ability(a: Ability): void;
 }
 
 export class Hud {
@@ -32,6 +33,7 @@ export class Hud {
   readonly undo: PixelButton;
   readonly restart: PixelButton;
   readonly favor: PixelButton | null;
+  private abilityBtns: PixelButton[] = [];
   private turnText: Phaser.GameObjects.Image;
   private infoParts: Phaser.GameObjects.GameObject[] = [];
   private orderParts: Phaser.GameObjects.GameObject[] = [];
@@ -40,21 +42,23 @@ export class Hud {
   constructor(
     readonly scene: Phaser.Scene,
     title: string,
-    act: number,
+    index: number,
     s: GameState,
-    h: HudHandlers,
+    readonly h: HudHandlers,
   ) {
     const d = DEPTH.hud;
-    // title strip
     const stripW = 208;
     scene.add.image(4, 4, ensureTexture(scene, `strip|${stripW}`, () => panel(stripW, 15, 'ink'))).setOrigin(0, 0).setDepth(d);
-    addText(scene, 9, 8, `${ROMAN[act] ?? act}. ${title}`, C.cream).setDepth(d);
-    this.turnText = addText(scene, 0, 8, '', C.goldHi).setDepth(d);
+    addText(scene, 9, 8, `${index}. ${title}`, C.cream).setDepth(d);
 
-    // right column
-    scene.add.image(HUD_X, 2, ensureTexture(scene, `hudcol|${HUD_W}`, () => { const b = panel(HUD_W, 176, 'clay'); meanderBand(b, 3, 3, HUD_W - 6, C.ink); return b; })).setOrigin(0, 0).setDepth(d);
-    scene.add.image(this.ix, 16, ensureTexture(scene, 'hudinfo', () => panel(HUD_W - 12, 50, 'cream'))).setOrigin(0, 0).setDepth(d);
-    addText(scene, this.ix + 1, 70, t('ui.trojansAct'), C.ink).setDepth(d);
+    scene.add.image(HUD_X, 2, ensureTexture(scene, `hudcol|${HUD_W}`, () => {
+      const b = panel(HUD_W, 176, 'clay');
+      meanderBand(b, 3, 3, HUD_W - 6, C.ink);
+      return b;
+    })).setOrigin(0, 0).setDepth(d);
+    this.turnText = addText(scene, this.ix + 1, 15, '', C.ink).setDepth(d + 1);
+    scene.add.image(this.ix, 25, ensureTexture(scene, 'hudinfo2', () => panel(HUD_W - 12, 44, 'cream'))).setOrigin(0, 0).setDepth(d);
+    addText(scene, this.ix + 1, 72, t('ui.trojansAct'), C.ink).setDepth(d);
 
     const bw = HUD_W - 12;
     const half = Math.floor((bw - 2) / 2);
@@ -65,10 +69,9 @@ export class Hud {
     for (const b of [this.favor, this.endTurn, this.undo, this.restart]) b?.img.setDepth(d + 1);
   }
 
-  update(s: GameState, canUndo: boolean, busy: boolean, info: Unit | null, favorArmed: boolean): void {
+  update(s: GameState, canUndo: boolean, busy: boolean, info: Unit | null, favorArmed: boolean, selected: string | null, ability: Ability): void {
     const d = DEPTH.hud + 1;
-    setText(this.turnText, `${t('ui.turn')} ${Math.min(s.turn, 99)}  ${t('ui.par')} ${s.par}`, s.turn > s.par ? C.sun : C.goldHi);
-    this.turnText.setX(4 + 208 - 5 - this.turnText.width);
+    setText(this.turnText, `${t('ui.turn')} ${Math.min(s.turn, 99)}/${s.par}`, s.turn > s.par ? C.red : C.ink);
 
     const playing = s.phase === 'player' && !busy;
     this.endTurn.setEnabled(playing);
@@ -76,38 +79,56 @@ export class Hud {
     this.restart.setEnabled(!busy);
     if (this.favor) {
       this.favor.setEnabled(playing && !s.favorUsed);
-      this.favor.setLabel(s.favorUsed ? `${cap(s.patron!)}: used` : favorArmed ? `${cap(s.patron!)}: pick` : cap(s.patron!));
+      const g = cap(s.patron!);
+      this.favor.setLabel(s.favorUsed ? `${g}: spent` : favorArmed ? (s.patron === 'poseidon' ? 'Pick a line' : 'Pick a tile') : g);
     }
 
     // info card
     for (const p of this.infoParts) p.destroy();
     this.infoParts = [];
+    for (const b of this.abilityBtns) b.destroy();
+    this.abilityBtns = [];
     const x = this.ix + 4;
     if (info) {
       const st = UNITS[info.type];
-      const name = addText(this.scene, x, 20, st.name, C.ink).setDepth(d);
+      const name = addText(this.scene, x, 29, st.name, C.ink).setDepth(d);
       const team = info.team === 'trojan' ? 'trojan' : 'greek';
-      const pips = this.scene.add.image(x + name.width + 4, 21, ensureTexture(this.scene, `pips|${info.hp}|${info.maxHp}|${team}`, () => hpPips(info.hp, info.maxHp, team))).setOrigin(0, 0).setDepth(d);
+      const pips = this.scene.add.image(x + name.width + 4, 30, ensureTexture(this.scene, `pips|${info.hp}|${info.maxHp}|${team}`, () => hpPips(info.hp, info.maxHp, team))).setOrigin(0, 0).setDepth(d);
       this.infoParts.push(name, pips);
-      const lines = describe(info, s);
-      lines.forEach((ln, i) => this.infoParts.push(addText(this.scene, x, 31 + i * 10, ln.text, ln.color, { maxWidth: HUD_W - 20 }).setDepth(d)));
+      const abs = info.team === 'greek' ? abilitiesOf(info) : [];
+      const toggles = abs.length > 1 && info.id === selected && s.phase === 'player';
+      const lines = describe(info, s).slice(0, toggles ? 1 : 3);
+      lines.forEach((ln, i) => this.infoParts.push(addText(this.scene, x, 40 + i * 9, ln.text, ln.color).setDepth(d)));
+      if (toggles) {
+        const w = Math.floor((HUD_W - 22) / 2);
+        abs.slice(0, 2).forEach((a, i) => {
+          const b = addButton(this.scene, x + i * (w + 2), 51, w, 13, ABILITY_LABEL[a], () => this.h.ability(a), String(i + 1));
+          b.setActive(a === ability);
+          b.img.setDepth(d + 1);
+          this.abilityBtns.push(b);
+        });
+      }
     } else {
-      this.infoParts.push(addText(this.scene, x, 20, s.phase === 'player' ? 'Pick a hero.' : '', C.umber, { maxWidth: HUD_W - 20 }).setDepth(d));
+      this.infoParts.push(addText(this.scene, x, 29, s.phase === 'player' ? 'Pick a hero.' : '', C.umber).setDepth(d));
     }
 
-    // Trojan order list
+    // Trojan action order
     for (const p of this.orderParts) p.destroy();
     this.orderParts = [];
     const order = intentOrder(s);
     order.slice(0, 4).forEach((u, i) => {
-      const y = 81 + i * 10;
+      const y = 83 + i * 10;
+      if (info && info.id === u.id) {
+        const hl = this.scene.add.rectangle(x - 4, y - 2, HUD_W - 14, 11, 0xffe9a0).setOrigin(0, 0).setDepth(d - 1);
+        this.orderParts.push(hl);
+      }
       this.orderParts.push(this.scene.add.image(x - 3, y - 1, ensureTexture(this.scene, `badge|${i + 1}|${s.ares}`, () => orderBadge(i + 1, s.ares))).setOrigin(0, 0).setDepth(d));
       const nm = addText(this.scene, x + 9, y, UNITS[u.type].name, C.ink).setDepth(d);
       this.orderParts.push(nm);
       this.orderParts.push(this.scene.add.image(x + 11 + nm.width, y - 2, ensureTexture(this.scene, `gl|${u.intent!.kind}|${u.intent!.dir}`, () => intentGlyph(u.intent!.kind, u.intent!.dir, C.ink))).setOrigin(0, 0).setDepth(d));
     });
-    if (order.length > 4) this.orderParts.push(addText(this.scene, x + 9, 121, `+${order.length - 4} more`, C.umber).setDepth(d));
-    if (order.length === 0) this.orderParts.push(addText(this.scene, x, 81, 'None.', C.umber).setDepth(d));
+    if (order.length > 4) this.orderParts.push(addText(this.scene, x + 9, 123 - 2, `+${order.length - 4} more`, C.umber).setDepth(d));
+    if (order.length === 0) this.orderParts.push(addText(this.scene, x, 83, 'None.', C.umber).setDepth(d));
   }
 }
 
@@ -119,20 +140,23 @@ function describe(u: Unit, s: GameState): Array<{ text: string; color: number }>
   const st = UNITS[u.type];
   const out: Array<{ text: string; color: number }> = [];
   if (u.team === 'greek') {
-    const act = st.abilities?.includes('swap') ? `Strike ${st.damage} or swap` : st.abilities?.includes('push') ? `Spear push ${st.damage}` : `Strike ${st.damage}`;
+    const act = st.abilities?.includes('swap') ? 'Strike 1/swap' : st.abilities?.includes('push') ? `Push ${st.damage}` : `Strike ${st.damage}`;
     out.push({ text: `Move ${st.move}. ${act}.`, color: C.umber });
     if (u.type === 'achilles') out.push({ text: 'Arrows kill him.', color: C.red });
-    if (u.type === 'ajax') out.push({ text: 'Shield: -1 per hit.', color: C.oliveDk });
+    if (u.type === 'ajax') out.push({ text: 'Shield: -1 a hit.', color: C.oliveDk });
     if (u.type === 'patroclus') out.push({ text: 'Trojans aim at him.', color: C.red });
-    if (u.type === 'odysseus') out.push({ text: 'Swap: line, 3 tiles.', color: C.umber });
-    if (u.type === 'diomedes') out.push({ text: 'Push into walls, water.', color: C.umber });
+    if (u.type === 'odysseus') out.push({ text: 'Swap: 3 in a line.', color: C.umber });
+    if (u.type === 'diomedes') out.push({ text: 'Into rock or river.', color: C.umber });
     if (s.phase === 'player' && u.acted) out.push({ text: 'Done this turn.', color: C.umber });
     else if (s.phase === 'player' && u.moved) out.push({ text: 'Can still act.', color: C.umber });
   } else if (u.team === 'trojan') {
     const n = intentOrder(s).indexOf(u) + 1;
-    out.push({ text: u.intent ? `Acts ${n}: ${INTENT_NAME[u.intent.kind]} ${st.damage + (s.ares ? 1 : 0)}` : 'Waiting.', color: C.umber });
+    const dmg = st.damage + (s.ares ? 1 : 0);
+    const what = u.intent?.kind === 'arrow' ? `Arrow ${dmg}, whole line` : u.intent?.kind === 'charge' ? `Charge ${dmg}` : u.intent?.kind === 'sweep' ? `Sweep 3 tiles, ${dmg}` : `Thrust ${dmg}`;
+    out.push({ text: u.mist ? 'In the mist.' : n > 0 ? `Acts ${ORD[n] ?? n}.` : 'Waiting.', color: C.umber });
+    out.push({ text: what, color: C.umber });
     if (u.type === 'shieldbearer') out.push({ text: 'Front is shielded.', color: C.red });
-    if (u.type === 'chariot') out.push({ text: 'Charges until blocked.', color: C.umber });
+    if (u.type === 'chariot') out.push({ text: 'Runs till blocked.', color: C.umber });
     if (u.type === 'paris') out.push({ text: 'Hunts Achilles.', color: C.red });
   } else {
     out.push({ text: 'Keep it afloat.', color: C.umber });

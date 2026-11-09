@@ -7,6 +7,7 @@
 import { C } from '../palette';
 import type { PixelBuffer } from '../pixels';
 import { drawFigure, POSES, type FigureSpec, type Pose } from './figure';
+import { BOSS_TYPES, bossFrames } from './bosses';
 
 const bronze = { metal: C.bronze, metalDk: C.bronzeDk, metalHi: C.goldHi };
 const iron = { metal: C.iron, metalDk: C.ironDk, metalHi: C.ironHi };
@@ -65,12 +66,10 @@ FIGURES.diomedes!.extra = (b: PixelBuffer, oy: number, pose: Pose) => {
 
 export const TROJANS = new Set(['spearman', 'archer', 'shieldbearer', 'chariot', 'hector', 'paris']);
 
-export interface UnitFrames {
-  frames: Record<Pose, PixelBuffer>;
-}
 
 /** Build all poses for a figure unit, mirrored for Trojans so they face left. */
 export function buildFigureFrames(type: string): Record<Pose, PixelBuffer> {
+  if (BOSS_TYPES[type]) return bossFrames(type);
   const spec = FIGURES[type];
   if (!spec) throw new Error(`no figure recipe for ${type}`);
   const out = {} as Record<Pose, PixelBuffer>;
@@ -80,3 +79,6 @@ export function buildFigureFrames(type: string): Record<Pose, PixelBuffer> {
   }
   return out;
 }
+
+/** Every unit type with a sprite (figures + bosses). */
+export const ALL_UNIT_TYPES = [...Object.keys(FIGURES), ...Object.keys(BOSS_TYPES)];

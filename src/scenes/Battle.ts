@@ -10,13 +10,13 @@ import { buildFigureFrames } from '../art/sprites/units';
 import { shipSprite } from '../art/sprites/extras';
 import { Session } from '../core/session';
 import { abilitiesOf, abilityTargets, canAct, moveOptions } from '../core/rules';
-import { onBoard, unitAt, unitById } from '../core/board';
+import { lineDir, onBoard, unitAt, unitById } from '../core/board';
 import type { Ability, Action, Dir, GameEvent, GameState, PatronId, Unit } from '../core/types';
 import { levelById, LEVELS } from '../data/levels/index';
 import type { LevelData } from '../core/level';
 import { BoardView, DEPTH, EMPTY_UI, type BoardUi } from '../view/BoardView';
 import { Hud } from '../view/Hud';
-import { tileOrigin, unitOrigin } from '../view/layout';
+import { tileOrigin } from '../view/layout';
 import { ensureTexture } from '../view/textures';
 import { banner, boltFx, popNumber, shake, shatter, slide } from '../view/fx';
 import { wait } from '../view/ui';
@@ -42,6 +42,7 @@ export class BattleScene extends Phaser.Scene {
   cursor: { x: number; y: number } | null = null;
   preview: { x: number; y: number } | null = null;
   favorDir: Dir = 'right';
+  waveOrigin: { x: number; y: number } | null = null;
   private settleWaiters: Array<() => void> = [];
 
   constructor() {
@@ -62,6 +63,7 @@ export class BattleScene extends Phaser.Scene {
     this.mode = 'idle';
     this.cursor = null;
     this.preview = null;
+    this.waveOrigin = null;
   }
 
   create(): void {
@@ -69,11 +71,12 @@ export class BattleScene extends Phaser.Scene {
     this.add.image(0, 0, ensureTexture(this, `bg|${this.level.backdrop ?? 'beach'}`, () => drawBackdrop(this.level.backdrop ?? 'beach'))).setOrigin(0, 0).setDepth(-10);
     this.board = new BoardView(this, this.state, night);
     this.board.warm([...new Set(this.state.units.map((u) => u.type))]);
-    this.hud = new Hud(this, this.level.title, this.level.act, this.state, {
+    this.hud = new Hud(this, this.level.title, this.level.index, this.state, {
       endTurn: () => this.endTurn(),
       undo: () => this.undo(),
       restart: () => this.restart(),
       favor: () => this.toggleFavor(),
+      ability: (a) => this.setAbility(a),
     });
 
     this.input.on('pointerdown', (p: Phaser.Input.Pointer) => this.onPointer(p));
@@ -98,6 +101,7 @@ export class BattleScene extends Phaser.Scene {
       ui.moveTiles = [...moveOptions(s, u).values()].map((p) => p[p.length - 1]!);
       ui.targetTiles = canAct(s, u) ? abilityTargets(s, u, this.ability) : [];
     }
+    if (this.mode === 'favor' && s.patron === 'poseidon' && this.waveOrigin) ui.wave = { ...this.waveOrigin, dir: this.favorDir };
     if (this.mode === 'favor' && s.patron === 'athena') ui.targetTiles = s.units.filter((v) => v.team === 'greek' && onBoard(v) && v.acted).map((v) => ({ x: v.x, y: v.y }));
     return ui;
   }
@@ -105,7 +109,7 @@ export class BattleScene extends Phaser.Scene {
   refresh(): void {
     this.board.refresh(this.state, this.ui());
     const infoUnit = (this.info && unitById(this.state, this.info)) || (this.selected && unitById(this.state, this.selected)) || null;
-    this.hud.update(this.state, this.session.canUndo, this.busy, infoUnit && onBoard(infoUnit) ? infoUnit : null, this.mode === 'favor');
+    this.hud.update(this.state, this.session.canUndo, this.busy, infoUnit && onBoard(infoUnit) ? infoUnit : null, this.mode === 'favor', this.selected, this.ability);
     // facing: Greeks are drawn facing right, Trojans facing left
     for (const u of this.state.units) {
       const v = this.board.units.get(u.id);
@@ -162,10 +166,21 @@ export class BattleScene extends Phaser.Scene {
     const here = unitAt(s, x, y);
 
     if (this.mode === 'favor') {
-      if (s.patron === 'poseidon' && !confirmed) { this.preview = { x, y }; this.refresh(); return; }
+      if (s.patron === 'poseidon') {
+        // 1st tap: the wave's line; 2nd tap on a neighbour: its direction (same tile = current direction)
+        const o = this.waveOrigin;
+        if (o && o.x === x && o.y === y) return this.castWave(o, this.favorDir);
+        const d = o ? lineDir(o.x, o.y, x, y) : null;
+        if (o && d && Math.abs(o.x - x) + Math.abs(o.y - y) === 1) return this.castWave(o, d);
+        this.waveOrigin = { x, y };
+        sfx.play('tick');
+        this.refresh();
+        return;
+      }
+      if (s.patron === 'athena' && !(here && here.team === 'greek' && here.acted)) { sfx.play('invalid'); return; }
       if (!confirmed) { this.preview = { x, y }; this.info = here?.id ?? null; this.refresh(); return; }
       this.preview = null;
-      this.dispatch({ type: 'favor', god: s.patron!, x, y, dir: s.patron === 'poseidon' ? this.favorDir : undefined });
+      this.dispatch({ type: 'favor', god: s.patron!, x, y });
       return;
     }
 
@@ -219,7 +234,7 @@ export class BattleScene extends Phaser.Scene {
     if (k === 'KeyF') return this.hud.favor?.press();
     if (this.busy || s.phase !== 'player') return;
     if (k === 'Escape') {
-      if (this.mode === 'favor') this.mode = 'idle';
+      if (this.mode === 'favor') { this.mode = 'idle'; this.waveOrigin = null; }
       else this.select(null);
       this.preview = null;
       this.refresh();
@@ -242,14 +257,14 @@ export class BattleScene extends Phaser.Scene {
       const u = this.selected ? unitById(s, this.selected) : undefined;
       const abs = u ? abilitiesOf(u) : [];
       const pick = abs[k === 'Digit1' ? 0 : 1];
-      if (pick) { this.ability = pick; this.refresh(); }
+      if (pick) this.setAbility(pick);
       return;
     }
     const arrows: Record<string, [number, number, Dir]> = { ArrowUp: [0, -1, 'up'], ArrowDown: [0, 1, 'down'], ArrowLeft: [-1, 0, 'left'], ArrowRight: [1, 0, 'right'], KeyW: [0, -1, 'up'], KeyS: [0, 1, 'down'], KeyA: [-1, 0, 'left'], KeyD: [1, 0, 'right'] };
     const a = arrows[k];
     if (a) {
       e.preventDefault();
-      if (this.mode === 'favor' && s.patron === 'poseidon' && e.shiftKey) { this.favorDir = a[2]; this.refresh(); return; }
+      if (this.mode === 'favor' && s.patron === 'poseidon' && this.waveOrigin) { this.favorDir = a[2]; sfx.play('tick'); this.refresh(); return; }
       const sel = this.selected ? unitById(s, this.selected) : undefined;
       const c = this.cursor ?? (sel ? { x: sel.x, y: sel.y } : { x: 0, y: 0 });
       this.cursor = { x: Math.max(0, Math.min(s.width - 1, c.x + a[0])), y: Math.max(0, Math.min(s.height - 1, c.y + a[1])) };
@@ -267,9 +282,22 @@ export class BattleScene extends Phaser.Scene {
 
   // ------------------------------------------------------------------ commands
 
+  private castWave(o: { x: number; y: number }, dir: Dir): void {
+    this.waveOrigin = null;
+    this.dispatch({ type: 'favor', god: 'poseidon', x: o.x, y: o.y, dir });
+  }
+
+  setAbility(a: Ability): void {
+    this.ability = a;
+    this.preview = null;
+    sfx.play('tick');
+    this.refresh();
+  }
+
   toggleFavor(): void {
     if (this.busy || !this.state.patron || this.state.favorUsed) return;
     this.mode = this.mode === 'favor' ? 'idle' : 'favor';
+    this.waveOrigin = null;
     this.preview = null;
     sfx.play('select');
     this.refresh();
@@ -325,6 +353,10 @@ export class BattleScene extends Phaser.Scene {
     return new Promise((res) => this.settleWaiters.push(res));
   }
 
+  private origin(id: string, x: number, y: number): { px: number; py: number } {
+    return this.board.spriteOrigin(this.board.units.get(id)?.type ?? '', x, y);
+  }
+
   private sprite(id: string): Phaser.GameObjects.Image | undefined {
     return this.board.units.get(id)?.sprite;
   }
@@ -347,7 +379,7 @@ export class BattleScene extends Phaser.Scene {
           img.setData('busy', true);
           sfx.play('move');
           for (const p of e.path) {
-            const o = unitOrigin(this.board.layout, p.x, p.y);
+            const o = this.origin(e.unit, p.x, p.y);
             await slide(this, img, o.px, o.py, 90);
             img.setDepth(this.board.rowDepth(p.y) + 5);
             this.board.placePips(e.unit);
@@ -391,7 +423,7 @@ export class BattleScene extends Phaser.Scene {
           if (!img) break;
           sfx.play('charge');
           for (const p of e.path) {
-            const o = unitOrigin(this.board.layout, p.x, p.y);
+            const o = this.origin(e.unit, p.x, p.y);
             await slide(this, img, o.px, o.py, 60);
             img.setDepth(this.board.rowDepth(p.y) + 5);
           }
@@ -440,7 +472,7 @@ export class BattleScene extends Phaser.Scene {
         case 'push': {
           const img = this.sprite(e.unit);
           if (!img) break;
-          const o = unitOrigin(this.board.layout, e.to.x, e.to.y);
+          const o = this.origin(e.unit, e.to.x, e.to.y);
           sfx.play('push');
           await slide(this, img, o.px, o.py, 90);
           img.setDepth(this.board.rowDepth(e.to.y) + 5);
@@ -459,7 +491,7 @@ export class BattleScene extends Phaser.Scene {
           const a = this.sprite(e.unit), b = this.sprite(e.target);
           if (!a || !b) break;
           sfx.play('swap');
-          const oa = unitOrigin(this.board.layout, e.to.x, e.to.y), ob = unitOrigin(this.board.layout, e.from.x, e.from.y);
+          const oa = this.origin(e.unit, e.to.x, e.to.y), ob = this.origin(e.target, e.from.x, e.from.y);
           await Promise.all([slide(this, a, oa.px, oa.py, 140), slide(this, b, ob.px, ob.py, 140)]);
           break;
         }
@@ -489,7 +521,7 @@ export class BattleScene extends Phaser.Scene {
           const img = this.sprite(e.unit);
           if (!img || !e.path.length) break;
           for (const p of e.path) {
-            const o = unitOrigin(this.board.layout, p.x, p.y);
+            const o = this.origin(e.unit, p.x, p.y);
             await slide(this, img, o.px, o.py, 80);
             img.setDepth(this.board.rowDepth(p.y) + 5);
             this.board.placePips(e.unit);

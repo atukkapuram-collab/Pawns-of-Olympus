@@ -92,6 +92,85 @@ export const GODS: Record<string, GodSpec> = {
       for (const [x, r] of [[4, 5], [14, 6], [34, 6], [44, 5]] as const) b.circle(x, 56, r, C.sand, { half: 'top', shade: C.boneDk, shadeFrom: 2 });
     },
   },
+  // Athena: crested helmet, spear, the round aegis with an ink Gorgon face. Greek side.
+  athena: {
+    halo: C.ironHi, bg: C.ink, bgLow: C.darkUmber, robe: C.bone, robeDk: C.boneDk, hair: C.ink,
+    draw: (f) => {
+      f.halfCircle(24, 10, 5, C.bronze, C.bronzeDk);
+      f.halfCircle(24, 5, 4, C.ironHi); // crest
+      f.vline(19, 10, 4, C.bronze); // cheek guard
+      f.rect(33, 19, 2, 3, C.skin);
+      f.vline(36, 2, 48, C.bronzeDk); // spear
+      f.set(36, 1, C.bronze).hline(35, 2, 3, C.bronze).hline(35, 3, 3, C.bronze).set(36, 4, C.bronze);
+      f.rect(34, 20, 3, 2, C.skin);
+      // aegis: bronze disc on the near arm with a Gorgon face
+      f.circle(14, 31, 6, C.bronze, { shade: C.bronzeDk, shadeFrom: 2 });
+      // snakes fringe the rim; a small ink Gorgoneion at the centre
+      for (let a = 0; a < Math.PI * 2; a += Math.PI / 6) f.set(Math.round(14 + Math.cos(a) * 6), Math.round(31 + Math.sin(a) * 6), C.ink);
+      f.rect(13, 30, 3, 3, C.ink);
+      f.set(14, 31, C.bronze);
+    },
+  },
+  // Poseidon: trident, sea-green robe, a breaking wave across the bottom. Greek side.
+  poseidon: {
+    halo: C.sea, bg: C.ink, bgLow: C.seaDk, robe: C.sea, robeDk: C.seaDk, hair: C.ink,
+    draw: (f) => {
+      f.triangle(21.5, 16, 29, 16, 24.5, 25, C.ink); // beard
+      f.hline(25, 16, 3, C.skin);
+      f.rect(33, 19, 2, 2, C.skin);
+      f.vline(37, 6, 44, C.bronze); // trident shaft
+      f.hline(34, 8, 7, C.bronze);
+      for (const x of [34, 37, 40]) { f.vline(x, 2, 6, C.bronze); f.set(x, 1, C.bronze); }
+      f.rect(35, 20, 3, 2, C.skin);
+    },
+    front: (b) => {
+      for (let x = -4; x < 52; x += 8) {
+        b.triangle(x, 56, x + 4, 46, x + 8, 56, C.sea);
+        b.triangle(x + 4, 56, x + 4, 46, x + 8, 56, C.seaDk);
+        b.hline(x + 3, 46, 2, C.bone);
+      }
+    },
+  },
+  // Apollo: the silver-bow god before a flat sun disc. Trojan side.
+  apollo: {
+    halo: C.sun, bg: C.wineDk, bgLow: C.ink, robe: C.bronze, robeDk: C.bronzeDk, hair: C.goldHi,
+    draw: (f) => {
+      f.rect(19, 10, 2, 8, C.goldHi); // long hair
+      f.rect(33, 19, 3, 2, C.skin);
+      // bow: an arc held out front, string in skin-light
+      for (let a = -1.2; a <= 1.2; a += 0.06) f.set(Math.round(37 + Math.cos(a) * 3), Math.round(28 + Math.sin(a) * 11), C.bronzeDk);
+      f.vline(37, 17, 23, C.goldHi);
+      f.hline(30, 28, 7, C.goldHi); // arrow nocked
+    },
+  },
+  // Ares: crested iron helmet, bronze breastplate, spear. Trojan side.
+  ares: {
+    halo: C.red, bg: C.wineDk, bgLow: C.ink, robe: C.wine, robeDk: C.wineDk, hair: C.ink,
+    draw: (f) => {
+      f.halfCircle(24, 10, 5, C.iron, C.ironDk);
+      f.halfCircle(24, 5, 5, C.red); // crest
+      f.vline(19, 10, 5, C.iron).vline(29, 10, 3, C.iron);
+      f.triangle(17, 19, 31, 19, 24, 29, C.iron); // breastplate
+      f.triangle(24, 19, 31, 19, 24, 29, C.ironDk);
+      f.rect(33, 19, 2, 3, C.skin);
+      f.vline(37, 3, 47, C.ironDk);
+      f.set(37, 1, C.iron).hline(36, 2, 3, C.iron).hline(36, 3, 3, C.iron);
+      f.rect(35, 20, 3, 2, C.skin);
+    },
+  },
+  // Aphrodite: golden hair, rose robe, a white dove on her hand. Trojan side.
+  aphrodite: {
+    halo: C.rose, bg: C.wineDk, bgLow: C.ink, robe: C.rose, robeDk: C.wine, hair: C.goldHi,
+    draw: (f) => {
+      f.rect(19, 10, 2, 10, C.goldHi);
+      f.rect(28, 10, 2, 3, C.goldHi);
+      f.rect(33, 19, 4, 2, C.skin);
+      // dove
+      f.rect(36, 15, 5, 3, C.bone);
+      f.triangle(37, 15, 40, 15, 39, 11, C.bone);
+      f.set(41, 15, C.bone).set(40, 16, C.ink);
+    },
+  },
 };
 
 export function buildPortrait(god: string): PixelBuffer {

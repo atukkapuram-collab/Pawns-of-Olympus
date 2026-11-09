@@ -41,7 +41,7 @@ export class ResultScene extends Phaser.Scene {
   create(data: ResultData): void {
     this.buttons = [];
     const d = DEPTH.modal;
-    this.add.image(0, 0, ensureTexture(this, 'veil', () => new PixelBuffer(320, 180).ditherFill(0, 0, 320, 180, C.ink, 10))).setOrigin(0, 0).setDepth(d);
+    this.add.image(0, 0, ensureTexture(this, 'veil', () => new PixelBuffer(320, 180).ditherFill(0, 0, 320, 180, C.ink, 13))).setOrigin(0, 0).setDepth(d);
     const W = 184, H = 104, x = Math.floor((320 - W) / 2), y = 38;
     this.add.image(x, y, ensureTexture(this, `resultpanel|${W}|${H}`, () => panel(W, H, 'clay', true))).setOrigin(0, 0).setDepth(d);
     const level = LEVELS.find((l) => l.id === data.levelId)!;
@@ -52,19 +52,20 @@ export class ResultScene extends Phaser.Scene {
     if (data.won) {
       const stars = kleos(data.state);
       recordResult(level.id, stars);
-      this.centerText(y + 16, t('ui.victory'), C.ink);
+      this.centerText(y + 14, t('ui.victory'), C.ink);
+      this.centerText(y + 25, level.title, C.umber);
       const labels = ['Won', 'No hero fell', `Within par ${level.par}`];
       void (async () => {
         for (let i = 0; i < 3; i++) {
           await wait(this, 260);
           const got = stars[i]!;
-          addText(this, x + 30, y + 30 + i * 11, got ? '*' : '^', got ? C.goldHi : C.deepClay, { shadow: C.ink }).setDepth(d + 1);
-          addText(this, x + 42, y + 31 + i * 11, labels[i]!, got ? C.ink : C.umber).setDepth(d + 1);
+          addText(this, x + 52, y + 37 + i * 11, got ? '*' : '^', got ? C.goldHi : C.deepClay, { shadow: C.ink }).setDepth(d + 1);
+          addText(this, x + 64, y + 38 + i * 11, labels[i]!, got ? C.ink : C.umber).setDepth(d + 1);
           if (got) sfx.play('star');
         }
       })();
       const outro = t(level.outro ?? '');
-      if (outro && outro !== level.outro) this.centerText(y + 66, outro, C.umber, W - 16);
+      if (outro && outro !== level.outro) this.centerText(y + 72, outro, C.umber, W - 16);
       const bw = 70;
       if (next) this.buttons.push(addButton(this, x + W - bw - 10, y + H - 30, bw, 14, t('ui.next'), () => this.go(next.id), 'E'));
       else this.buttons.push(addButton(this, x + W - bw - 10, y + H - 30, bw, 14, 'Title', () => this.toTitle(), 'E'));
@@ -72,9 +73,8 @@ export class ResultScene extends Phaser.Scene {
     } else {
       this.centerText(y + 18, t('ui.defeat'), C.ink);
       this.centerText(y + 34, LOSE_LINE[data.state.loseReason ?? 'heroes'] ?? '', C.umber);
-      const bw = 78;
-      this.buttons.push(addButton(this, x + 10, y + H - 30, bw, 14, t('ui.retry'), () => this.go(level.id), 'R'));
-      this.buttons.push(addButton(this, x + W - bw - 10, y + H - 30, bw, 14, t('ui.undoLastTurn'), () => battle.undoLastTurn(), 'Z'));
+      this.buttons.push(addButton(this, x + 10, y + H - 30, 64, 14, t('ui.retry'), () => this.go(level.id), 'R'));
+      this.buttons.push(addButton(this, x + W - 96 - 10, y + H - 30, 96, 14, t('ui.undoLastTurn'), () => battle.undoLastTurn(), 'Z'));
     }
     for (const b of this.buttons) b.img.setDepth(d + 2);
 
