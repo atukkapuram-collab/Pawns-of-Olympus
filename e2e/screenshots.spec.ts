@@ -27,7 +27,7 @@ test('gallery', async ({ page }) => {
 });
 
 test('game screens', async ({ page }) => {
-  test.setTimeout(240_000);
+  test.setTimeout(480_000);
   // 640x360 viewport -> exactly 2x scale for the 2x captures
   await page.setViewportSize({ width: 640, height: 360 });
   await page.goto('./');
@@ -50,7 +50,7 @@ test('game screens', async ({ page }) => {
   await go('Settings', { back: 'Title' }, 'settings');
   await go('Credits', {}, 'credits');
 
-  for (const id of ['a1-01', 'a1-02', 'a1-03', 'a1-04', 'a1-05']) {
+  for (const id of ['a1-01', 'a1-02', 'a1-03', 'a1-04', 'a1-05', 'a2-01', 'a2-02', 'a2-03', 'a2-04', 'a2-05', 'a3-01', 'a3-02', 'a3-03', 'a3-04', 'a3-05']) {
     await page.evaluate((l) => window.__POO__!.startLevel(l), id);
     await waitScene(page, 'Battle');
     await settle(page);

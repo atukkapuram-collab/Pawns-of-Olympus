@@ -6,7 +6,7 @@
 import Phaser from 'phaser';
 import { C, FIGURE_NIGHT_REMAP } from '../art/palette';
 import { drawBackdrop } from '../art/backdrops';
-import { buildFigureFrames } from '../art/sprites/units';
+import { TROJANS, buildFigureFrames } from '../art/sprites/units';
 import { shipSprite } from '../art/sprites/extras';
 import { Session } from '../core/session';
 import { abilitiesOf, abilityTargets, canAct, moveOptions } from '../core/rules';
@@ -400,7 +400,7 @@ export class BattleScene extends Phaser.Scene {
   private sourceBuffer(type: string) {
     if (type === 'ship') return shipSprite();
     const b = buildFigureFrames(type).idle0;
-    return this.board.night ? b.paletteSwap(FIGURE_NIGHT_REMAP) : b;
+    return this.board.night && !TROJANS.has(type) ? b.paletteSwap(FIGURE_NIGHT_REMAP) : b;
   }
 
   private async play(events: GameEvent[]): Promise<void> {

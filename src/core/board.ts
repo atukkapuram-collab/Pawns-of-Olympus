@@ -118,6 +118,21 @@ export function distanceField(s: GameState, sources: Array<{ x: number; y: numbe
   return dist;
 }
 
+/** Tiles watched by Trojan sentries in stealth levels: up to 3 along each facing, blocked by rock and units. */
+export function sentryTiles(s: GameState): Array<{ x: number; y: number }> {
+  const out: Array<{ x: number; y: number }> = [];
+  for (const t of trojans(s)) {
+    let p = { x: t.x, y: t.y };
+    for (let n = 0; n < 3; n++) {
+      p = step(p.x, p.y, t.facing);
+      if (!inBounds(s, p.x, p.y) || tileAt(s, p.x, p.y) === 'rock') break;
+      out.push(p);
+      if (unitAt(s, p.x, p.y)) break;
+    }
+  }
+  return out;
+}
+
 export function cloneState(s: GameState): GameState {
   return structuredClone(s);
 }

@@ -7,12 +7,12 @@ import Phaser from 'phaser';
 import { C, FIGURE_NIGHT_REMAP, NIGHT_REMAP, flashMap } from '../art/palette';
 import { PixelBuffer } from '../art/pixels';
 import * as T from '../art/sprites/tiles';
-import { buildFigureFrames } from '../art/sprites/units';
+import { TROJANS, buildFigureFrames } from '../art/sprites/units';
 import { POSES, type Pose } from '../art/sprites/figure';
-import { cursorOverlay, mistOverlay, pathDot, plagueOverlay, shipSprite, targetOverlay, threatFrame, waveOverlay } from '../art/sprites/extras';
+import { cursorOverlay, sightOverlay, mistOverlay, pathDot, plagueOverlay, shipSprite, targetOverlay, threatFrame, waveOverlay } from '../art/sprites/extras';
 import { hpPips, hpPipsVertical, intentGlyph, orderBadge, type IntentGlyph } from '../art/markers';
 import { traceAttack } from '../core/combat';
-import { onBoard } from '../core/board';
+import { onBoard, sentryTiles } from '../core/board';
 import { intentOrder } from '../core/rules';
 import type { GameState, Unit } from '../core/types';
 import { boardLayout, tileOrigin, unitOrigin, type BoardLayout } from './layout';
@@ -79,7 +79,7 @@ export class BoardView {
         const frames = buildFigureFrames(type);
         b = pose === 'flash' ? frames.idle0.paletteSwap(flashMap()) : frames[pose];
       }
-      return this.night && pose !== 'flash' ? b.paletteSwap(FIGURE_NIGHT_REMAP) : b;
+      return this.night && pose !== 'flash' && !TROJANS.has(type) ? b.paletteSwap(FIGURE_NIGHT_REMAP) : b;
     });
   }
 
@@ -269,6 +269,10 @@ export class BoardView {
 
     for (const t of ui.moveTiles) overlay('ov|move', T.moveOverlay, t.x, t.y);
     for (const k of s.plague) overlay('ov|plague', plagueOverlay, k % s.width, Math.floor(k / s.width));
+    // stealth: what each sentry sees (3 tiles along its facing; rock and units block)
+    if (s.objective.type === 'stealth') {
+      for (const t of sentryTiles(s)) overlay('ov|sight', sightOverlay, t.x, t.y);
+    }
 
     if (ui.showIntents) {
       const order = intentOrder(s);

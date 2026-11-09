@@ -123,7 +123,8 @@ export class Hud {
     for (const p of this.orderParts) p.destroy();
     this.orderParts = [];
     const order = intentOrder(s);
-    order.slice(0, 4).forEach((u, i) => {
+    const shown = order.length > 4 ? 3 : 4;
+    order.slice(0, shown).forEach((u, i) => {
       const y = 83 + i * 10;
       if (info && info.id === u.id) {
         const hl = this.scene.add.rectangle(x - 4, y - 2, HUD_W - 14, 11, 0xffe9a0).setOrigin(0, 0).setDepth(d - 1);
@@ -134,7 +135,7 @@ export class Hud {
       this.orderParts.push(nm);
       this.orderParts.push(this.scene.add.image(x + 11 + nm.width, y - 2, ensureTexture(this.scene, `gl|${u.intent!.kind}|${u.intent!.dir}`, () => intentGlyph(u.intent!.kind, u.intent!.dir, C.ink))).setOrigin(0, 0).setDepth(d));
     });
-    if (order.length > 4) this.orderParts.push(addText(this.scene, x + 9, 123 - 2, `+${order.length - 4} more`, C.umber).setDepth(d));
+    if (order.length > 4) this.orderParts.push(addText(this.scene, x + 9, 83 + 3 * 10, `+${order.length - 3} more`, C.umber).setDepth(d));
     if (order.length === 0) this.orderParts.push(addText(this.scene, x, 83, 'None.', C.umber).setDepth(d));
   }
 }

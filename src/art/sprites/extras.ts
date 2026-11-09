@@ -63,6 +63,17 @@ export function shipSprite(damaged = false): PixelBuffer {
   return b.outlined(C.ink);
 }
 
+/** Sentry sight in stealth: sun dither with an open eye-shaped frame. */
+export function sightOverlay(): PixelBuffer {
+  const b = new PixelBuffer(TILE_W, 16);
+  b.ditherFill(2, 2, 21, 13, C.sun, 4);
+  b.hline(6, 5, 13, C.sun).hline(6, 11, 13, C.sun);
+  b.set(5, 6, C.sun).set(4, 7, C.sun).set(4, 8, C.sun).set(4, 9, C.sun).set(5, 10, C.sun);
+  b.set(19, 6, C.sun).set(20, 7, C.sun).set(20, 8, C.sun).set(20, 9, C.sun).set(19, 10, C.sun);
+  b.rect(11, 7, 3, 3, C.ink);
+  return b;
+}
+
 /** Poseidon's line: sea-colored dither with a foam edge. */
 export function waveOverlay(): PixelBuffer {
   const b = new PixelBuffer(TILE_W, 16);
