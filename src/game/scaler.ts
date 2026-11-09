@@ -1,0 +1,31 @@
+/**
+ * Integer-only upscaling. The canvas always renders at 320x180 internal pixels.
+ * We pick the largest whole multiple that fits the window in *device* pixels, so
+ * every game pixel is an exact block of screen pixels even at 125%/150% Windows
+ * scaling or on high-DPI phones. The page background letterboxes the rest.
+ */
+export const GAME_W = 320;
+export const GAME_H = 180;
+
+export function computeScale(viewW: number, viewH: number, dpr: number): { factor: number; cssW: number; cssH: number } {
+  const devW = Math.floor(viewW * dpr);
+  const devH = Math.floor(viewH * dpr);
+  const factor = Math.max(1, Math.floor(Math.min(devW / GAME_W, devH / GAME_H)));
+  return { factor, cssW: (GAME_W * factor) / dpr, cssH: (GAME_H * factor) / dpr };
+}
+
+export function attachIntegerScaler(canvas: HTMLCanvasElement, onChange?: (factor: number) => void): () => void {
+  const apply = (): void => {
+    const host = canvas.parentElement ?? document.body;
+    const rect = host.getBoundingClientRect();
+    const { factor, cssW, cssH } = computeScale(rect.width || window.innerWidth, rect.height || window.innerHeight, window.devicePixelRatio || 1);
+    canvas.style.width = `${cssW}px`;
+    canvas.style.height = `${cssH}px`;
+    onChange?.(factor);
+  };
+  apply();
+  window.addEventListener('resize', apply);
+  const mq = window.matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`);
+  mq.addEventListener?.('change', apply);
+  return () => window.removeEventListener('resize', apply);
+}
