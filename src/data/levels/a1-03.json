@@ -1,0 +1,37 @@
+{
+  "id": "a1-03",
+  "act": 1,
+  "index": 3,
+  "title": "Ajax Holds",
+  "teaches": "Ajax shrugs off one point of every hit. Stand him in the line and the arrow stops there.",
+  "backdrop": "beach",
+  "board": [
+    ",,,,,,,",
+    "###....",
+    ".......",
+    "###....",
+    "......."
+  ],
+  "legend": {},
+  "units": [
+    { "type": "achilles", "x": 0, "y": 2 },
+    { "type": "ajax", "x": 3, "y": 1 },
+    { "type": "archer", "x": 6, "y": 2, "facing": "left" },
+    { "type": "archer", "x": 3, "y": 4, "facing": "up" },
+    { "type": "spearman", "x": 5, "y": 0, "facing": "down" }
+  ],
+  "objective": { "type": "rout" },
+  "patrons": ["zeus", "athena"],
+  "trojanEvent": null,
+  "par": 4,
+  "intro": "lvl.a1-03.intro",
+  "outro": "lvl.a1-03.outro",
+  "solution": {
+    "patron": "zeus",
+    "turns": [
+      [["move", "ajax", 4, 2], ["endTurn"]],
+      [["move", "achilles", 3, 2], ["favor", "zeus", 6, 2], ["act", "ajax", "strike", 4, 1], ["endTurn"]],
+      [["move", "achilles", 3, 1], ["act", "achilles", "strike", 4, 1], ["move", "ajax", 4, 3], ["act", "ajax", "strike", 4, 4]]
+    ]
+  }
+}

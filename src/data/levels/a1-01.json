@@ -1,0 +1,34 @@
+{
+  "id": "a1-01",
+  "act": 1,
+  "index": 1,
+  "title": "The Landing",
+  "teaches": "Move, then strike. Trojans attack the tile they show.",
+  "backdrop": "beach",
+  "board": [
+    "~~~~~~~",
+    ",,,,,,,",
+    ".......",
+    ".......",
+    "......."
+  ],
+  "legend": {},
+  "units": [
+    { "type": "achilles", "x": 1, "y": 3 },
+    { "type": "spearman", "x": 4, "y": 2, "facing": "left" },
+    { "type": "spearman", "x": 5, "y": 4, "facing": "left" }
+  ],
+  "objective": { "type": "rout" },
+  "patrons": [],
+  "trojanEvent": null,
+  "par": 3,
+  "intro": "lvl.a1-01.intro",
+  "outro": "lvl.a1-01.outro",
+  "solution": {
+    "patron": null,
+    "turns": [
+      [["move", "achilles", 4, 3], ["act", "achilles", "strike", 4, 2], ["endTurn"]],
+      [["act", "achilles", "strike", 5, 3]]
+    ]
+  }
+}

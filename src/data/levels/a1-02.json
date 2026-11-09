@@ -1,0 +1,37 @@
+{
+  "id": "a1-02",
+  "act": 1,
+  "index": 2,
+  "title": "Arrows from the Dunes",
+  "teaches": "Arrows fly down a line and hit the first one there. One arrow kills Achilles.",
+  "backdrop": "beach",
+  "board": [
+    "~~~~~~~",
+    ",,,,,,,",
+    "..#....",
+    ".......",
+    "....#..",
+    "......."
+  ],
+  "legend": {},
+  "units": [
+    { "type": "achilles", "x": 1, "y": 3 },
+    { "type": "ajax", "x": 1, "y": 4 },
+    { "type": "spearman", "x": 3, "y": 1, "facing": "down" },
+    { "type": "archer", "x": 6, "y": 3, "facing": "left" },
+    { "type": "spearman", "x": 6, "y": 5, "facing": "left" }
+  ],
+  "objective": { "type": "rout" },
+  "patrons": ["zeus"],
+  "trojanEvent": null,
+  "par": 3,
+  "intro": "lvl.a1-02.intro",
+  "outro": "lvl.a1-02.outro",
+  "solution": {
+    "patron": "zeus",
+    "turns": [
+      [["move", "achilles", 3, 2], ["act", "achilles", "strike", 3, 1], ["move", "ajax", 2, 3], ["endTurn"]],
+      [["move", "achilles", 5, 3], ["act", "achilles", "strike", 6, 3], ["favor", "zeus", 5, 4]]
+    ]
+  }
+}
