@@ -10,11 +10,11 @@ Format and principles: `.claude/skills/pawns-level-design/SKILL.md`. Rules: `doc
 | 3 | a1-03 | Ajax Holds | Tower shield; stand in the line to shelter others | Zeus, Athena | — | 4 |
 | 4 | a1-04 | Fire at the Ships | Protect an objective; fire spreads along brush | Zeus, Athena | — | 4 |
 | 5 | a1-05 | The Man of Many Turns | Swap an enemy so its attack hits another Trojan | Zeus, Athena | — | 4 |
-| 6 | a2-01 | The River Scamander | Push into deep water | all | — | tbd |
-| 7 | a2-02 | Chariots | Charge lanes; redirect a charge into Trojans | all | — | tbd |
-| 8 | a2-03 | In Borrowed Armor | Patroclus draws every attack; decoy routing | all | — | tbd |
-| 9 | a2-04 | Apollo's Plague | Telegraphed plague arrows; keep moving | all | Apollo | tbd |
-| 10 | a2-05 | Hector at the Gates | Boss sweep; Ares' rage | all | Ares | tbd |
+| 6 | a2-01 | The River Scamander | Push into deep water | all | — | 3 |
+| 7 | a2-02 | Chariots | Charge lanes; redirect a charge into Trojans | all | — | 3 |
+| 8 | a2-03 | In Borrowed Armor | Patroclus draws every attack; decoy routing | all | — | 4 |
+| 9 | a2-04 | Apollo's Plague | Telegraphed plague arrows; keep moving | all | Apollo | 3 |
+| 10 | a2-05 | Hector at the Gates | Boss sweep, Ares' rage; escort Diomedes to the gate | all | Ares | 4 |
 | 11 | a3-01 | The Wrath | Achilles alone vs many; efficient routing | all | Ares | tbd |
 | 12 | a3-02 | Mist of Aphrodite | A defeated enemy returns; plan for it | all | Aphrodite | tbd |
 | 13 | a3-03 | Paris on the Walls | Arrows kill Achilles; shield him with Ajax | all | — | tbd |
