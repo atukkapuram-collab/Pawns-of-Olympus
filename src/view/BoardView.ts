@@ -10,7 +10,7 @@ import * as T from '../art/sprites/tiles';
 import { buildFigureFrames } from '../art/sprites/units';
 import { POSES, type Pose } from '../art/sprites/figure';
 import { cursorOverlay, mistOverlay, pathDot, plagueOverlay, shipSprite, targetOverlay, threatFrame, waveOverlay } from '../art/sprites/extras';
-import { hpPips, intentGlyph, orderBadge, type IntentGlyph } from '../art/markers';
+import { hpPips, hpPipsVertical, intentGlyph, orderBadge, type IntentGlyph } from '../art/markers';
 import { traceAttack } from '../core/combat';
 import { onBoard } from '../core/board';
 import { intentOrder } from '../core/rules';
@@ -160,8 +160,13 @@ export class BoardView {
 
   private pipsTex(u: Unit): string {
     const team = u.team === 'trojan' ? 'trojan' : 'greek';
+    const v = this.units.get(u.id);
+    v?.pips.setData('hp', [u.hp, u.maxHp, team]);
     return this.tex(`pips|${u.hp}|${u.maxHp}|${team}`, () => hpPips(u.hp, u.maxHp, team));
   }
+
+  /** Which tile each unit stands on (for pip placement). */
+  private tileOf = new Map<string, { x: number; y: number }>();
 
   /** Snap a unit's sprite (and pips) to a tile. */
   placeUnit(id: string, x: number, y: number): void {
@@ -169,6 +174,7 @@ export class BoardView {
     if (!v) return;
     const o = this.spriteOrigin(v.type, x, y);
     v.sprite.setPosition(o.px, o.py).setDepth(this.rowDepth(y) + 5);
+    this.tileOf.set(id, { x, y });
     this.placePips(id);
   }
 
@@ -176,14 +182,23 @@ export class BoardView {
     const v = this.units.get(id);
     if (!v) return;
     const top = v.type === 'ship' ? 2 : 0;
-    v.pips.setPosition(Math.round(v.sprite.x + v.sprite.width / 2 - Math.floor(v.pips.width / 2)), Math.round(v.sprite.y - 5 + top)).setDepth(v.sprite.depth + 1);
+    const t = this.tileOf.get(id);
+    const crowded = !!t && [...this.tileOf.entries()].some(([oid, p]) => oid !== id && p.x === t.x && p.y === t.y - 1 && !!this.units.get(oid)?.sprite.visible);
+    const data = v.pips.getData('hp') as [number, number, 'greek' | 'trojan'] | undefined;
+    if (data) {
+      const [hp, max, team] = data;
+      v.pips.setTexture(crowded ? this.tex(`pipsv|${hp}|${max}|${team}`, () => hpPipsVertical(hp, max, team)) : this.tex(`pips|${hp}|${max}|${team}`, () => hpPips(hp, max, team)));
+    }
+    if (crowded) v.pips.setPosition(Math.round(v.sprite.x + v.sprite.width - 4), Math.round(v.sprite.y + 9)).setDepth(v.sprite.depth + 1);
+    else v.pips.setPosition(Math.round(v.sprite.x + v.sprite.width / 2 - Math.floor(v.pips.width / 2)), Math.round(v.sprite.y - 5 + top)).setDepth(v.sprite.depth + 1);
   }
 
   /** Update one unit's HP pips mid-animation. */
   setPips(id: string, hp: number, max: number, team: 'greek' | 'trojan'): void {
     const v = this.units.get(id);
     if (!v) return;
-    v.pips.setTexture(this.tex(`pips|${hp}|${max}|${team}`, () => hpPips(hp, max, team)));
+    v.pips.setData('hp', [hp, max, team]);
+    this.placePips(id);
   }
 
   /** Hide selection marks while an action plays out. */
@@ -289,9 +304,10 @@ export class BoardView {
           if (occupant) {
             // the unit hides the tile: frame its feet in red, badge beside its HP
             overlay('ov|threatFrame', threatFrame, h.x, h.y, occupant.sprite.depth + 1);
-            const bx = Math.round(occupant.sprite.x + 18 + n * 10), by = Math.round(occupant.sprite.y - 8);
-            this.add(this.scene.add.image(bx, by, badge).setOrigin(0, 0).setDepth(DEPTH.markers));
-            this.add(this.scene.add.image(bx + 9, by - 1, this.tex(`chip|${glyphKey}`, () => intentGlyph(GLYPH[enemy.intent!.kind]!, enemy.intent!.dir, C.ink).paletteSwap({ [C.ink]: C.red }).outlined(C.ink))).setOrigin(0, 0).setDepth(DEPTH.markers));
+            const ot = at(h.x, h.y);
+            const bx = ot.px + 1 + n * 10, by = ot.py + 5;
+            this.add(this.scene.add.image(bx, by, badge).setOrigin(0, 0).setDepth(occupant.sprite.depth + 2));
+            this.add(this.scene.add.image(bx + 9, by - 1, this.tex(`chip|${glyphKey}`, () => intentGlyph(GLYPH[enemy.intent!.kind]!, enemy.intent!.dir, C.ink).paletteSwap({ [C.ink]: C.red }).outlined(C.ink))).setOrigin(0, 0).setDepth(occupant.sprite.depth + 2));
           } else {
             const o = at(h.x, h.y);
             this.add(this.scene.add.image(o.px + 7, o.py + 2, glyph).setOrigin(0, 0).setDepth(DEPTH.markers - 1));

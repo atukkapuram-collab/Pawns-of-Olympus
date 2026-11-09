@@ -28,11 +28,12 @@ function skyGods(): PixelBuffer {
   for (const [cx, s] of [[34, 1], [286, 1], [160, 0]] as const) {
     if (!s) continue;
     const g = new PixelBuffer(60, 60);
+    const oy = 6;
     g.triangle(30, 22, 16, 58, 44, 58, C.clayLt);
     g.triangle(18, 14, 42, 14, 30, 32, C.clayLt);
     g.circle(30, 8, 5, C.clayLt);
     g.ditherRing(30, 8, 9, 13, C.clayLt, [8, 4]);
-    for (let y = 0; y < 60; y++) for (let x = 0; x < 60; x++) if (g.get(x, y) !== 255 && ((x + y) % 2 === 0 || (x * 3 + y) % 4 === 0)) b.set(cx - 30 + x, y, C.clayLt);
+    for (let y = 0; y < 60; y++) for (let x = 0; x < 60; x++) if (g.get(x, y) !== 255 && ((x + y) % 2 === 0 || (x * 3 + y) % 4 === 0)) b.set(cx - 30 + x, y + oy, C.clayLt);
   }
   return b;
 }
@@ -72,6 +73,13 @@ export class TitleScene extends Phaser.Scene {
     this.add.image(Math.round(160 - logo.w / 2), 11, ensureTexture(this, 'title|logo', () => logo)).setOrigin(0, 0);
     const tag = addText(this, 0, 125, t('game.tagline'), C.ink);
     tag.x = Math.round(160 - tag.width / 2);
+
+    this.add.image(0, 57, ensureTexture(this, 'title|wallband', () => {
+      const b = new PixelBuffer(320, 9);
+      b.rect(0, 0, 320, 9, C.clay);
+      meanderBand(b, 0, 0, 320, C.ink);
+      return b;
+    })).setOrigin(0, 0);
 
     // the marching frieze on its ground band
     this.add.image(0, 136, ensureTexture(this, 'title|ground', () => {

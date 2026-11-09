@@ -25,10 +25,9 @@ export function hectorFrame(pose: Pose): PixelBuffer {
   // tall plume rising from the crest: a stacked half-disc and a stalk
   const hx = 4 + 11 + tx;
   const plume = new PixelBuffer(BOSS_W, BOSS_H);
-  plume.halfCircle(hx, 9 + oy, 5, C.purple);
-  plume.halfCircle(hx, 5 + oy, 3, C.purple);
-  plume.vline(hx, 9 + oy, 4, C.ink);
-  for (let x = hx - 4; x <= hx + 4; x += 2) plume.set(x, 8 + oy, C.wineDk); // horsehair strands
+  plume.halfCircle(hx, 10 + oy, 5, C.purple);
+  plume.hline(hx - 5, 10 + oy, 11, C.bronze); // crest holder
+  for (let x = hx - 3; x <= hx + 3; x += 2) plume.set(x, 7 + oy, C.wineDk); // horsehair strands
   b.blit(plume.outlined(C.ink), 0, 0);
   b.blit(base, 4, 8);
   // great shield
@@ -43,7 +42,7 @@ export function hectorFrame(pose: Pose): PixelBuffer {
 }
 
 const parisSpec: FigureSpec = {
-  skin: C.skin, tunic: C.cream, tunicDk: C.boneDk, metal: C.iron, metalDk: C.ironDk, metalHi: C.ironHi,
+  skin: C.skin, tunic: C.cream, tunicDk: C.wineDk, metal: C.iron, metalDk: C.ironDk, metalHi: C.ironHi,
   crest: C.bronze, emblem: C.ink, outline: C.ink, headgear: 'bare', shield: 'none', weapon: 'bow',
   // leopard-skin cloak: ink spots over a cream torso
   extra: (b, oy, pose) => {

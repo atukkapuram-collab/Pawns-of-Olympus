@@ -13,7 +13,7 @@ import { addButton, addText, type PixelButton } from '../view/ui';
 import { sfx } from '../audio/sfx';
 
 export const FAVOR_LINE: Record<PatronId, string> = {
-  zeus: 'Bolt: 2 damage, one tile.',
+  zeus: 'Bolt: 2 damage to one tile.',
   athena: 'A spent hero acts again.',
   poseidon: 'A wave shoves one row.',
 };
@@ -52,8 +52,9 @@ export class PatronScene extends Phaser.Scene {
       this.add.image(x, 58, ensureTexture(this, `pt|card`, () => panel(cw, 98, 'clay'))).setOrigin(0, 0);
       const portrait = this.add.image(x + 24, 62, ensureTexture(this, `portrait|${g}`, () => buildPortrait(g))).setOrigin(0, 0);
       portrait.setInteractive({ useHandCursor: true }).on('pointerup', () => this.pick(g));
-      addText(this, x + 6, 121, FAVOR_LINE[g], C.ink, { maxWidth: cw - 12 });
-      const b = addButton(this, x + 6, 139, cw - 12, 14, cap(g), () => this.pick(g), String(i + 1));
+      const fl = addText(this, 0, 120, FAVOR_LINE[g], C.ink, { maxWidth: cw - 16, align: 'center' });
+      fl.x = Math.round(x + cw / 2 - fl.width / 2);
+      const b = addButton(this, x + 6, 140, cw - 12, 14, cap(g), () => this.pick(g), String(i + 1));
       buttons.push(b);
     });
     this.input.keyboard?.on('keydown', (e: KeyboardEvent) => {

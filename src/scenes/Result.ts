@@ -4,7 +4,7 @@
  */
 import Phaser from 'phaser';
 import { C } from '../art/palette';
-import { PixelBuffer } from '../art/pixels';
+import { PixelBuffer, meanderBand } from '../art/pixels';
 import { panel } from '../art/ui';
 import { kleos } from '../core/rules';
 import type { GameState, PatronId } from '../core/types';
@@ -45,8 +45,13 @@ export class ResultScene extends Phaser.Scene {
     this.buttons = [];
     const d = DEPTH.modal;
     this.add.image(0, 0, ensureTexture(this, 'veil', () => new PixelBuffer(320, 180).ditherFill(0, 0, 320, 180, C.ink, 13))).setOrigin(0, 0).setDepth(d);
-    const W = 184, H = 104, x = Math.floor((320 - W) / 2), y = 38;
-    this.add.image(x, y, ensureTexture(this, `resultpanel|${W}|${H}`, () => panel(W, H, 'clay', true))).setOrigin(0, 0).setDepth(d);
+    const W = 184, H = 124, x = Math.floor((320 - W) / 2), y = 28;
+    this.add.image(x, y, ensureTexture(this, `resultpanel2|${W}|${H}`, () => {
+      const b = panel(W, H, 'clay');
+      b.rect(3, 3, W - 6, 13, C.ink);
+      meanderBand(b, 3, H - 12, W - 6, C.ink);
+      return b;
+    })).setOrigin(0, 0).setDepth(d);
     const level = LEVELS.find((l) => l.id === data.levelId)!;
     const idx = LEVELS.indexOf(level);
     const next = LEVELS[idx + 1];
@@ -56,30 +61,31 @@ export class ResultScene extends Phaser.Scene {
       music.play('victory');
       const stars = kleos(data.state);
       recordResult(level.id, stars);
-      this.centerText(y + 14, t('ui.victory'), C.ink);
-      this.centerText(y + 25, level.title, C.umber);
+      this.centerText(y + 6, t('ui.victory'), C.cream);
+      this.centerText(y + 21, `${level.index}. ${level.title}`, C.umber);
       const labels = ['Won', 'No hero fell', `Within par ${level.par}`];
       void (async () => {
         for (let i = 0; i < 3; i++) {
           await wait(this, 260);
           const got = stars[i]!;
-          addText(this, x + 52, y + 37 + i * 11, got ? '*' : '^', got ? C.goldHi : C.deepClay, { shadow: C.ink }).setDepth(d + 1);
-          addText(this, x + 64, y + 38 + i * 11, labels[i]!, got ? C.ink : C.umber).setDepth(d + 1);
+          addText(this, x + 52, y + 34 + i * 11, got ? '*' : '^', got ? C.goldHi : C.deepClay, { shadow: C.ink }).setDepth(d + 1);
+          addText(this, x + 64, y + 35 + i * 11, labels[i]!, got ? C.ink : C.umber).setDepth(d + 1);
           if (got) sfx.play('star');
         }
       })();
       const outro = t(level.outro ?? '');
-      if (outro && outro !== level.outro) this.centerText(y + 72, outro, C.umber, W - 16);
-      const bw = 70;
-      this.buttons.push(addButton(this, x + W - bw - 10, y + H - 30, bw, 14, next ? t('ui.next') : 'Onward', () => { music.stop(); afterVictory(this, level.id); }, 'E'));
-      this.buttons.push(addButton(this, x + Math.floor(W / 2) - 12, y + H - 30, 24, 14, 'Map', () => this.toMap(level.act)));
-      this.buttons.push(addButton(this, x + 10, y + H - 30, bw, 14, t('ui.retry'), () => this.go(level.id, data.patron), 'R'));
+      if (outro && outro !== level.outro) this.centerText(y + 72, outro, C.ink, W - 24);
+      const by = y + H - 30;
+      this.buttons.push(addButton(this, x + 118, by, 56, 14, next ? t('ui.next') : 'Onward', () => { music.stop(); afterVictory(this, level.id); }, 'E'));
+      this.buttons.push(addButton(this, x + 74, by, 36, 14, 'Map', () => this.toMap(level.act)));
+      this.buttons.push(addButton(this, x + 10, by, 56, 14, t('ui.retry'), () => this.go(level.id, data.patron), 'R'));
     } else {
-      this.centerText(y + 18, t('ui.defeat'), C.ink);
+      this.centerText(y + 6, t('ui.defeat'), C.cream);
       const why = data.state.loseReason ?? 'heroes';
-      this.centerText(y + 34, STRINGS[`lose.${why}`] ?? LOSE_FALLBACK[why] ?? '', C.umber, W - 16);
+      this.centerText(y + 40, STRINGS[`lose.${why}`] ?? LOSE_FALLBACK[why] ?? '', C.umber, W - 16);
       this.buttons.push(addButton(this, x + 10, y + H - 30, 64, 14, t('ui.retry'), () => this.go(level.id, data.patron), 'R'));
       this.buttons.push(addButton(this, x + W - 96 - 10, y + H - 30, 96, 14, t('ui.undoLastTurn'), () => battle.undoLastTurn(), 'Z'));
+      this.buttons.push(addButton(this, x + Math.floor(W / 2) - 18, y + 60, 36, 14, 'Map', () => this.toMap(level.act)));
     }
     for (const b of this.buttons) b.img.setDepth(d + 2);
 

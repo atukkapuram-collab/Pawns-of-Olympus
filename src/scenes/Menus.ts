@@ -62,7 +62,7 @@ export class SettingsScene extends Phaser.Scene {
       { label: 'Mute all', ...flag('muted') },
       { label: 'Screen shake', ...flag('shake') },
       { label: 'Reduced motion', ...flag('reducedMotion') },
-      { label: 'High-contrast threats', ...flag('highContrast') },
+      { label: 'Threat hatch', ...flag('highContrast') },
     ];
     addButton(this, x + 150, y + 126, 60, 14, t('ui.back'), () => this.close(), 'Esc').img.setDepth(12);
     this.input.keyboard?.on('keydown', (e: KeyboardEvent) => {
@@ -91,7 +91,7 @@ export class SettingsScene extends Phaser.Scene {
     this.rows.forEach((r, i) => {
       const yy = y + 30 + i * 15;
       const on = i === this.row;
-      const label = addText(this, x + 12, yy + 3, r.label, on ? C.ink : C.umber).setDepth(11);
+      const label = addText(this, x + 12, yy + 3, r.label, C.ink).setDepth(11);
       const minus = addButton(this, x + 120, yy, 13, 13, '-', () => { this.row = i; r.change(-1); this.commit(); });
       const val = addText(this, x + 137, yy + 3, r.get(), C.ink).setDepth(11);
       const plus = addButton(this, x + 196, yy, 13, 13, '+', () => { this.row = i; r.change(1); this.commit(); });
@@ -129,11 +129,12 @@ export class CreditsScene extends Phaser.Scene {
       ['(Butler 1898; Lang, Leaf and Myers 1883; Pope 1715).', C.umber],
       ['Homer, for the plot.', C.umber],
     ];
-    lines.forEach(([s, c], i) => {
-      if (!s) return;
-      const img = addText(this, x + 12, y + 18 + i * 11, s, c, { maxWidth: 236 }).setDepth(11);
-      img.setDepth(11);
-    });
+    let yy = y + 16;
+    for (const [s, c] of lines) {
+      if (!s) { yy += 5; continue; }
+      const img = addText(this, x + 12, yy, s, c, { maxWidth: 236 }).setDepth(11);
+      yy += img.height + 2;
+    }
     const b: PixelButton = addButton(this, x + 180, y + 136, 66, 14, data.ending ? 'Title' : t('ui.back'), () => this.scene.start(data.ending ? 'Title' : 'Title'), 'E');
     b.img.setDepth(12);
     this.input.keyboard?.on('keydown', (e: KeyboardEvent) => { if (['Escape', 'Enter', 'KeyE'].includes(e.code)) b.press(); });

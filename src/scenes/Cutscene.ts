@@ -132,7 +132,7 @@ export class CutsceneScene extends Phaser.Scene {
       tx.x = Math.round(160 - tx.width / 2);
       this.layer.push(tx);
     }
-    const n = addText(this, PANEL.x + PANEL.w - 30, PANEL.y + PANEL.h - 22, `${k + 1}/${this.pages.length}`, C.umber);
+    const n = addText(this, PANEL.x + PANEL.w - 28, 131, `${k + 1}/${this.pages.length}`, C.deepClay);
     this.layer.push(n);
     this.busy = false;
   }
@@ -142,6 +142,11 @@ export class CutsceneScene extends Phaser.Scene {
     const W = PANEL.w - 12, H = PANEL.h - 28;
     const b = new PixelBuffer(W, H);
     const ground = H - 10;
+    // hard sky bands joined by a 2-row dither, and a flat sun
+    b.rect(0, 0, W, 22, C.cream);
+    b.rect(0, 22, W, 16, C.sand);
+    b.ditherFill(0, 20, W, 2, C.sand, 8);
+    b.circle(W - 34, 16, 9, this.data0.act === 3 ? C.sun : C.sun);
     zigzagBand(b, 0, ground + 4, W, 4, C.ink);
     b.hline(0, ground + 1, W, C.ink);
     // a far frieze of hills (Acts I-II) or walls (Act III) behind the figures

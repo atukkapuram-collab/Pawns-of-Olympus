@@ -18,6 +18,18 @@ export function hpPips(hp: number, max: number, team: 'greek' | 'trojan'): Pixel
   return b;
 }
 
+/** Vertical HP pips, used beside a unit's head when the row above is crowded. */
+export function hpPipsVertical(hp: number, max: number, team: 'greek' | 'trojan'): PixelBuffer {
+  const h = max * 4 + 1;
+  const b = new PixelBuffer(5, h);
+  b.rect(0, 0, 5, h, C.ink);
+  for (let i = 0; i < max; i++) {
+    const c = i < hp ? (team === 'greek' ? C.goldHi : C.red) : C.umber;
+    b.rect(1, h - 4 - i * 4, 3, 3, c);
+  }
+  return b;
+}
+
 /** Numbered order badge for an enemy's intent (ink square, cream digit). */
 export function orderBadge(n: number, aura = false): PixelBuffer {
   const b = new PixelBuffer(9, 11);

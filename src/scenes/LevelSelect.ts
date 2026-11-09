@@ -94,7 +94,7 @@ export class LevelSelectScene extends Phaser.Scene {
     const next = addButton(this, 296, 80, 18, 18, '>', () => this.turn(1));
     prev.img.setDepth(3);
     next.img.setDepth(3);
-    addButton(this, 6, 160, 50, 14, t('ui.back'), () => this.scene.start('Title')).img.setDepth(3);
+    addButton(this, 6, 6, 40, 14, t('ui.back'), () => this.scene.start('Title')).img.setDepth(3);
 
     this.input.keyboard?.on('keydown', (e: KeyboardEvent) => {
       sfx.unlock();
@@ -179,7 +179,7 @@ export class LevelSelectScene extends Phaser.Scene {
     // info tablet under the frieze
     const l = levels[this.selected]!;
     const open = isUnlocked(l.id);
-    const tab = this.add.image(40, 132, ensureTexture(this, 'ls|tab2', () => panel(240, 38, 'cream'))).setOrigin(0, 0);
+    const tab = this.add.image(40, 132, ensureTexture(this, 'ls|tab3', () => panel(240, 42, 'cream'))).setOrigin(0, 0);
     this.items.push(tab);
     this.items.push(addText(this, 46, 136, `${l.index}. ${l.title}`, C.ink));
     this.items.push(addText(this, 46, 146, open ? l.teaches : 'Unpainted clay. Win the one before.', C.umber, { maxWidth: 176 }));

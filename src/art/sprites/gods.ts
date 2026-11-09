@@ -134,7 +134,7 @@ export const GODS: Record<string, GodSpec> = {
   },
   // Poseidon: trident, sea-green robe, a breaking wave across the bottom. Greek side.
   poseidon: {
-    halo: C.sea, bg: C.ink, bgLow: C.seaDk, robe: C.sea, robeDk: C.seaDk, hair: C.ink,
+    halo: C.sea, bg: C.ink, bgLow: C.darkUmber, robe: C.sea, robeDk: C.seaDk, hair: C.ink,
     draw: (f) => {
       f.triangle(21.5, 16, 29, 16, 24.5, 25, C.ink); // beard
       f.hline(25, 16, 3, C.skin);
@@ -154,7 +154,7 @@ export const GODS: Record<string, GodSpec> = {
   },
   // Apollo: the silver-bow god before a flat sun disc. Trojan side.
   apollo: {
-    halo: C.sun, bg: C.wineDk, bgLow: C.ink, robe: C.bronze, robeDk: C.bronzeDk, hair: C.goldHi,
+    halo: C.sun, bg: C.ink, bgLow: C.darkUmber, robe: C.bronze, robeDk: C.bronzeDk, hair: C.goldHi,
     draw: (f) => {
       f.rect(19, 10, 2, 8, C.goldHi); // long hair
       f.rect(33, 19, 3, 2, C.skin);
@@ -166,7 +166,7 @@ export const GODS: Record<string, GodSpec> = {
   },
   // Ares: crested iron helmet, bronze breastplate, spear. Trojan side.
   ares: {
-    halo: C.red, bg: C.wineDk, bgLow: C.ink, robe: C.wine, robeDk: C.wineDk, hair: C.ink,
+    halo: C.red, bg: C.ink, bgLow: C.darkUmber, robe: C.red, robeDk: C.wine, hair: C.ink,
     draw: (f) => {
       f.halfCircle(24, 10, 5, C.iron, C.ironDk);
       f.halfCircle(24, 5, 5, C.red); // crest
@@ -181,10 +181,11 @@ export const GODS: Record<string, GodSpec> = {
   },
   // Aphrodite: golden hair, rose robe, a white dove on her hand. Trojan side.
   aphrodite: {
-    halo: C.rose, bg: C.wineDk, bgLow: C.ink, robe: C.rose, robeDk: C.wine, hair: C.goldHi,
+    halo: C.rose, bg: C.ink, bgLow: C.darkUmber, robe: C.rose, robeDk: C.wine, hair: C.goldHi,
     draw: (f) => {
       f.rect(19, 10, 2, 10, C.goldHi);
       f.rect(28, 10, 2, 3, C.goldHi);
+      f.hline(20, 8, 9, C.bone); // a white fillet in her hair
       f.rect(33, 19, 4, 2, C.skin);
       // dove
       f.rect(36, 15, 5, 3, C.bone);

@@ -98,7 +98,14 @@ export class Hud {
       const abs = info.team === 'greek' ? abilitiesOf(info) : [];
       const toggles = abs.length > 1 && info.id === selected && s.phase === 'player';
       const lines = describe(info, s).slice(0, toggles ? 1 : 3);
-      lines.forEach((ln, i) => this.infoParts.push(addText(this.scene, x, 40 + i * 9, ln.text, ln.color).setDepth(d)));
+      let ly = 39;
+      for (const ln of lines) {
+        if (ly > 59) break;
+        const img = addText(this.scene, x, ly, ln.text, ln.color, { maxWidth: HUD_W - 22 }).setDepth(d);
+        if (ly + img.height > 68) { img.destroy(); break; }
+        this.infoParts.push(img);
+        ly += img.height + 2;
+      }
       if (toggles) {
         const w = Math.floor((HUD_W - 22) / 2);
         abs.slice(0, 2).forEach((a, i) => {
@@ -140,9 +147,10 @@ function describe(u: Unit, s: GameState): Array<{ text: string; color: number }>
   const st = UNITS[u.type];
   const out: Array<{ text: string; color: number }> = [];
   if (u.team === 'greek') {
-    const act = st.abilities?.includes('swap') ? 'Strike 1/swap' : st.abilities?.includes('push') ? `Push ${st.damage}` : `Strike ${st.damage}`;
-    out.push({ text: `Move ${st.move}. ${act}.`, color: C.umber });
-    if (u.type === 'achilles') out.push({ text: 'Arrows kill him.', color: C.red });
+    const act = st.abilities?.includes('swap') ? 'Strike 1 or swap' : st.abilities?.includes('push') ? `Spear push ${st.damage}` : `Strike ${st.damage}`;
+    out.push({ text: `Move ${st.move}. ${act}`, color: C.umber });
+    const arrows = s.units.some((v) => (v.type === 'archer' || v.type === 'paris') && v.alive) || !!s.trojanEvent?.apollo;
+    if (u.type === 'achilles' && arrows) out.push({ text: 'Arrows kill him.', color: C.red });
     if (u.type === 'ajax') out.push({ text: 'Shield: -1 a hit.', color: C.oliveDk });
     if (u.type === 'patroclus') out.push({ text: 'Trojans aim at him.', color: C.red });
     if (u.type === 'odysseus') out.push({ text: 'Swap: 3 in a line.', color: C.umber });
@@ -152,7 +160,7 @@ function describe(u: Unit, s: GameState): Array<{ text: string; color: number }>
   } else if (u.team === 'trojan') {
     const n = intentOrder(s).indexOf(u) + 1;
     const dmg = st.damage + (s.ares ? 1 : 0);
-    const what = u.intent?.kind === 'arrow' ? `Arrow ${dmg}, whole line` : u.intent?.kind === 'charge' ? `Charge ${dmg}` : u.intent?.kind === 'sweep' ? `Sweep 3 tiles, ${dmg}` : `Thrust ${dmg}`;
+    const what = u.intent?.kind === 'arrow' ? `Arrow ${dmg}, full line` : u.intent?.kind === 'charge' ? `Charge ${dmg}` : u.intent?.kind === 'sweep' ? `Sweep ${dmg}, 3 tiles` : `Thrust ${dmg}`;
     out.push({ text: u.mist ? 'In the mist.' : n > 0 ? `Acts ${ORD[n] ?? n}.` : 'Waiting.', color: C.umber });
     out.push({ text: what, color: C.umber });
     if (u.type === 'shieldbearer') out.push({ text: 'Front is shielded.', color: C.red });
