@@ -31,13 +31,19 @@ function troyWall(b: PixelBuffer, y: number, h: number, night: boolean): void {
     b.hline(0, yy, b.w, joint);
     for (let x = row % 2 === 0 ? 0 : 6; x < b.w; x += 12) b.vline(x, yy, 4, joint);
   }
-  for (let x = 0; x < b.w; x += 8) b.rect(x, y - 3, 4, 3, face), b.hline(x, y - 3, 4, light);
+  for (let x = 0; x < b.w; x += 8) {
+    b.rect(x, y - 3, 4, 3, face);
+    b.hline(x, y - 3, 4, light);
+  }
   // towers
   for (const tx of [22, 140, 262]) {
     b.rect(tx, y - 12, 26, h + 12, face);
     b.frame(tx, y - 12, 26, h + 12, joint);
     b.vline(tx + 1, y - 11, h + 10, light);
-    for (let x = tx; x < tx + 26; x += 6) b.rect(x, y - 15, 4, 3, face), b.hline(x, y - 15, 4, light);
+    for (let x = tx; x < tx + 26; x += 6) {
+      b.rect(x, y - 15, 4, 3, face);
+      b.hline(x, y - 15, 4, light);
+    }
     b.rect(tx + 11, y - 6, 4, 6, joint); // window slit
   }
   // the gate in the middle tower
