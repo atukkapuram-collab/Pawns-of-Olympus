@@ -35,4 +35,21 @@ gh repo create pawns-of-olympus --private --source . --remote origin --push
 Then `git push` whenever you like. The repo stays private.
 
 ## Publishing (when you decide to)
-*Filled in during M9: GitHub Pages and itch.io steps.*
+Nothing is published until you do these steps yourself.
+
+### GitHub Pages
+1. Push the repo to GitHub (see above).
+2. GitHub Pages from a **private** repo needs a paid GitHub plan (Pro/Team). On a free account the repo must be public for Pages to work. A Pages site is always public, whatever the repo's visibility.
+3. In the repo on github.com: Settings > Pages > Build and deployment > Source: **GitHub Actions**.
+4. Actions tab > **Deploy to GitHub Pages** > **Run workflow**. It builds and publishes . The site appears at https://<your-user>.github.io/pawns-of-olympus/.
+5. All paths are relative, so the game works at that sub-path (the e2e tests already run it under /pawns-of-olympus/).
+
+### itch.io
+1.  then  -> .
+2. On itch.io: Create new project > Kind of project: **HTML** > upload the zip > tick **This file will be played in the browser**.
+3. Embed options: viewport 1280 x 720 (any 16:9 works; the game scales by whole numbers), tick **Mobile friendly** with orientation **Landscape**, tick **Fullscreen button**.
+4. Save as draft, test the page, then set visibility when ready.
+
+### Before publishing, check
+-  passes.
+- Play the build locally:  then  (http://localhost:4173).
