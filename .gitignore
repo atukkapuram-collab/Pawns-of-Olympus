@@ -1,0 +1,17 @@
+node_modules/
+dist/
+release/
+art-export/
+coverage/
+test-results/
+playwright-report/
+blob-report/
+.vite/
+*.log
+.env
+.env.*
+*.key
+*.pem
+.claude/settings.local.json
+.DS_Store
+Thumbs.db

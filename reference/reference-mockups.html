@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pawns of Olympus - reference mockups (rough sketches)</title>
+<style>
+  body{margin:0;padding:24px;background:#1d1714;color:#efe2c4;font-family:Georgia,serif;line-height:1.5}
+  h1{font-weight:normal;font-size:22px;margin:0 0 4px}
+  h2{font-weight:normal;font-size:17px;margin:28px 0 8px;color:#e0a83a}
+  p{margin:4px 0 12px;max-width:760px;color:#cdbb98;font-size:14px}
+  canvas{image-rendering:pixelated;display:block;border:1px solid #3a2a20}
+  .scene{width:960px;max-width:100%}
+  .row{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start;max-width:624px}
+  .card{width:192px}
+  .card canvas{width:192px}
+  .cap{font-size:13px;color:#cdbb98;margin-top:6px}
+  .cap b{color:#efe2c4;font-weight:normal}
+  .pal{display:flex;flex-wrap:wrap;gap:6px;max-width:760px}
+  .sw{width:56px;font-size:10px;color:#cdbb98;text-align:center}
+  .sw div{height:32px;border:1px solid #3a2a20;margin-bottom:2px}
+</style>
+</head>
+<body>
+<h1>Pawns of Olympus: reference mockups</h1>
+<p>These are rough sketches from the planning chat that show the chosen direction: GBA-era pixel art built from flat geometric shapes, with a Greek pottery palette. Treat them as a starting point, not the quality bar. The real game should be clearly better: cleaner sprites, more ground detail, animation and juice. Keep the same shape language and palette.</p>
+
+<h2>1. Battle scene (internal res 192x128, shown at 5x)</h2>
+<p>Achilles is selected (gold border) with his move range shown in light tiles. Ajax holds a tower shield. Two Trojans stand on red threat tiles, and a dotted gold line marks a planned attack. The pips above each unit show health. In the background are the walls of Troy, built from blocks.</p>
+<canvas id="scene" class="scene"></canvas>
+
+<h2>2. Hero close-ups (Ajax, Achilles, Trojan)</h2>
+<p>Bodies are inverted triangles (Geometric-period vase figures), with half-circle helmet crests and round or tower shields. Each has a 1px dark outline, and a few light pixels as highlights on the bronze.</p>
+<canvas id="line" style="width:480px;max-width:100%"></canvas>
+
+<h2>3. Gods (portraits, 48x56 each, shown at 4x)</h2>
+<p>Gods use hourglass bodies made of two triangles, long robes with a gold meander hem, and one signature item each. Their halos are dithered rings, not soft glow. Top row: Zeus (neutral), Athena and Poseidon (favor the Greeks). Bottom row: Apollo, Ares and Aphrodite (favor the Trojans).</p>
+<div class="row" id="gods"></div>
+
+<h2>4. Starting palette</h2>
+<div class="pal" id="pal"></div>
+
+<script>
+function mk(w,h){const c=document.createElement('canvas');c.width=w;c.height=h;return c}
+function R(x,c,a,b,w=1,h=1){x.fillStyle=c;x.fillRect(Math.round(a),Math.round(b),w,h)}
+function circ(x,c,cx,cy,r,half,sh){for(let y=-r;y<=r;y++)for(let i=-r;i<=r;i++){if(i*i+y*y<=r*r+r*0.8){if(half&&y>0)continue;R(x,sh&&i>1?sh:c,cx+i,cy+y)}}}
+function tri(x,c,a1,b1,a2,b2,a3,b3){const s=(px,py,ax,ay,bx,by)=>(px-bx)*(ay-by)-(ax-bx)*(py-by);const x0=Math.floor(Math.min(a1,a2,a3)),x1=Math.ceil(Math.max(a1,a2,a3)),y0=Math.floor(Math.min(b1,b2,b3)),y1=Math.ceil(Math.max(b1,b2,b3));
+for(let py=y0;py<=y1;py++)for(let px=x0;px<=x1;px++){const X=px+.5,Y=py+.5,d1=s(X,Y,a1,b1,a2,b2),d2=s(X,Y,a2,b2,a3,b3),d3=s(X,Y,a3,b3,a1,b1);if(!((d1<0||d2<0||d3<0)&&(d1>0||d2>0||d3>0)))R(x,c,px,py)}}
+function outline(c,col){const x=c.getContext('2d'),d=x.getImageData(0,0,c.width,c.height).data,W=c.width,H=c.height,a=(i,j)=>i>=0&&j>=0&&i<W&&j<H&&d[(j*W+i)*4+3]>0;const o=mk(W,H),ox=o.getContext('2d');
+for(let j=0;j<H;j++)for(let i=0;i<W;i++){if(!a(i,j)&&(a(i+1,j)||a(i-1,j)||a(i,j+1)||a(i,j-1)))R(ox,col,i,j)}ox.drawImage(c,0,0);return o}
+function hero(p,flip){const c=mk(26,31),x=c.getContext('2d');if(flip){x.translate(26,0);x.scale(-1,1)}
+R(x,p.wood,20,4,1,24);tri(x,p.hi,20,0,18,5,22,5);
+R(x,p.skin,10,22,2,6);R(x,p.skin,14,22,2,6);R(x,p.dark,9,28,3,1);R(x,p.dark,14,28,3,1);
+R(x,p.tunic2,9,19,8,4);tri(x,p.tunic,6.5,11,18.5,11,12.5,21);R(x,p.skin,17,12,3,2);
+circ(x,p.skin,12,8,3);circ(x,p.crest,12,4,4,true);circ(x,p.metal,12,7,4,true,p.shade);R(x,p.metal,8,7,2,3);R(x,p.hi,10,4);R(x,p.hi,9,5);
+if(p.tower){R(x,p.metal,1,10,8,14);R(x,p.shade,6,10,3,14);R(x,p.emb,4,14,2,6);R(x,p.hi,2,11,1,5)}else{circ(x,p.metal,6,16,5,false,p.shade);circ(x,p.emb,6,16,1);R(x,p.hi,3,13);R(x,p.hi,4,12)}
+return outline(c,p.ol)}
+const base={skin:'#f0b888',wood:'#7a4a20',dark:'#4a2a14',metal:'#e0a83a',shade:'#b07a22',hi:'#ffe9a0',ol:'#2a1a10'};
+const ACH=hero({...base,crest:'#d8342c',tunic:'#3a62c0',tunic2:'#2c4a96',emb:'#d8342c'});
+const AJX=hero({...base,crest:'#f4efe0',tunic:'#3f8a5a',tunic2:'#2e6a44',emb:'#2a1a10',tower:true});
+const TRO=hero({...base,crest:'#7a3a9a',metal:'#9aa4b0',shade:'#6e7884',hi:'#dfe6ee',tunic:'#8a2a3a',tunic2:'#6a1e2c',emb:'#7a3a9a',ol:'#1a0e14'},true);
+
+const sc=document.getElementById('scene');sc.width=192;sc.height=128;const m=sc.getContext('2d');
+R(m,'#f7e3bd',0,0,192,26);R(m,'#f3d29e',0,26,192,12);R(m,'#efc08a',0,38,192,22);circ(m,'#f08a4b',152,28,15);
+tri(m,'#7fa892',-10,60,36,32,92,60);tri(m,'#6b9480',70,60,128,36,206,60);
+R(m,'#d2ab80',24,44,144,16);R(m,'#b38b62',24,56,144,4);for(let i=24;i<168;i+=6)R(m,'#d2ab80',i,41,3,3);
+[30,90,148].forEach(t=>{R(m,'#c79c70',t,32,16,28);R(m,'#a87f58',t+12,32,4,28);R(m,'#e6c49a',t,32,1,28);for(let k=0;k<16;k+=5)R(m,'#c79c70',t+k,29,3,3)});
+R(m,'#5a3a2a',95,50,6,10);circ(m,'#5a3a2a',97,50,3,true);
+R(m,'#b5783f',0,60,192,68);
+const tile=(i,j,c)=>R(m,c,8+i*22,62+j*16,21,15);
+for(let i=0;i<8;i++)for(let j=0;j<4;j++)tile(i,j,(i+j)%2?'#d9a066':'#d29a5e');
+[[3,2],[2,1],[2,3],[1,2],[3,1],[3,3],[4,2]].forEach(([i,j])=>tile(i,j,'#ecc884'));
+[[5,1],[6,2]].forEach(([i,j])=>tile(i,j,'#c45a3c'));
+const sel=(i,j)=>{const a=8+i*22,b=62+j*16;R(m,'#fff0a0',a,b,21,1);R(m,'#fff0a0',a,b+14,21,1);R(m,'#fff0a0',a,b,1,15);R(m,'#fff0a0',a+20,b,1,15)};sel(2,2);
+const put=(s,i,j,hp,col)=>{const a=8+i*22,b=62+j*16;R(m,'rgba(60,30,10,0.25)',a+5,b+12,11,2);m.drawImage(s,a-2,b-17);for(let k=0;k<hp;k++)R(m,col,a+5+k*3,b-19,2,2)};
+put(AJX,1,1,4,'#6fd36f');put(TRO,5,1,3,'#ff6a4a');put(ACH,2,2,4,'#6fd36f');put(TRO,6,2,3,'#ff6a4a');
+for(let t=0.12;t<0.82;t+=0.09){R(m,'#fff0a0',62+(128-62)*t,101+(85-101)*t,2,2)}tri(m,'#fff0a0',122,83,126,90,129,82);
+for(let i=0;i<192;i+=8){R(m,'#7a4a20',i,126,8,2);R(m,'#e0a83a',i+2,126,4,1)}
+
+const lc=document.getElementById('line');lc.width=96;lc.height=40;const l=lc.getContext('2d');
+R(l,'#f3d29e',0,0,96,40);circ(l,'#f08a4b',84,9,6);R(l,'#d29a5e',0,32,96,8);R(l,'#b5783f',0,32,96,1);
+l.drawImage(AJX,4,3);l.drawImage(ACH,35,3);l.drawImage(TRO,66,3);
+
+const SK='#f0b888',GO='#e0a83a',GH='#ffe9a0',INK='#2a1a10';
+function god(name,cap,p){const card=document.createElement('div');card.className='card';const cv=document.createElement('canvas');card.appendChild(cv);const cp=document.createElement('div');cp.className='cap';cp.innerHTML='<b>'+name+'</b> - '+cap;card.appendChild(cp);document.getElementById('gods').appendChild(card);
+cv.width=48;cv.height=56;const b=cv.getContext('2d');
+R(b,p.sky,0,0,48,56);R(b,p.sky2,0,28,48,28);for(let i=0;i<48;i+=2)R(b,p.sky2,i+((i/2)%2),27);
+for(let j=0;j<40;j++)for(let i=0;i<48;i++){const d=Math.hypot(i-24,j-13);if(d>=9&&d<11)R(b,p.halo,i,j);else if(d>=11&&d<15&&(i+j)%2===0)R(b,p.halo,i,j);else if(d>=15&&d<17&&i%2===0&&j%2===0)R(b,p.halo,i,j)}
+if(p.back)p.back(b);
+const f=mk(48,56),x=f.getContext('2d');
+if(p.behind)p.behind(x);
+tri(x,p.robe,24,26,12,50,36,50);tri(x,p.shade,24,26,24,50,36,50);
+tri(x,p.robe,15,18,33,18,24,33);tri(x,p.shade,24,18,33,18,24,33);
+for(let i=13;i<36;i+=4){R(x,GO,i,46,3,1);R(x,GO,i,47,1,2)}R(x,GO,12,49,24,1);
+R(x,SK,14,19,2,11);R(x,SK,23,16,2,2);circ(x,SK,24,13,4);R(x,INK,22,13);R(x,INK,26,13);
+p.draw(x);
+b.drawImage(outline(f,'#140a0a'),0,0);
+if(p.front)p.front(b);else{[[5,54,6],[16,56,8],[31,55,7],[43,54,6]].forEach(([a,c,r])=>circ(b,'#f4efe0',a,c,r,true,'#d9d2c0'))}}
+god('Zeus','neutral. Power: lightning strikes a tile',{sky:'#22223e',sky2:'#2f2f58',halo:'#ffd34a',robe:'#f4efe0',shade:'#cfc6b0',draw:x=>{
+circ(x,'#f4efe0',24,11,4,true);tri(x,'#f4efe0',19.5,15,28.5,15,24,25);tri(x,'#cfc6b0',24,15,28.5,15,24,25);
+[[19,10],[20,9],[28,10],[27,9],[21,8],[26,8]].forEach(([a,c])=>R(x,GO,a,c));
+R(x,SK,31,8,2,11);[[34,0,2],[33,1,2],[32,2,2],[31,3,5],[33,4,2],[32,5,2],[31,6,2],[30,7,2]].forEach(([a,c,w])=>R(x,'#ffe14a',a,c,w,1));R(x,'#fffbe0',34,0)}});
+god('Athena','Greeks. Power: reveal enemy plans',{sky:'#1c2a44',sky2:'#26385a',halo:'#dfe6ee',robe:'#e9e2cf',shade:'#c4bba4',draw:x=>{
+circ(x,'#3a62c0',24,6,5,true);circ(x,GO,24,12,5,true,'#b07a22');R(x,GO,19,12,2,4);R(x,GH,21,8);R(x,GH,22,7);
+tri(x,GO,18,19,30,19,24,26);R(x,'#7a4a20',35,2,1,48);tri(x,GH,35,0,33,4,37,4);R(x,SK,32,20,3,2);
+circ(x,GO,14,31,6,false,'#b07a22');R(x,INK,12,30);R(x,INK,16,30);R(x,'#f4efe0',12,29);R(x,'#f4efe0',16,29);R(x,'#b07a22',14,32)}});
+god('Poseidon','Greeks. Power: a wave pushes a row',{sky:'#0e2c36',sky2:'#134050',halo:'#7fe0d0',robe:'#1f7a8a',shade:'#165c68',draw:x=>{
+circ(x,'#cfe3e6',24,11,4,true);tri(x,'#cfe3e6',19.5,15,28.5,15,24,26);tri(x,'#a9c6ca',24,15,28.5,15,24,26);
+[20,24,28].forEach(a=>tri(x,GO,a-2,8,a+2,8,a,4));
+R(x,GO,35,7,1,43);R(x,GO,32,2,1,6);R(x,GO,35,0,1,7);R(x,GO,38,2,1,6);R(x,GO,32,7,7,1);R(x,GH,35,0);R(x,SK,32,20,3,2)},
+front:b=>{for(let i=-4;i<52;i+=8){tri(b,'#3fb8c0',i,56,i+4,46,i+8,56);tri(b,'#2a8a94',i+4,56,i+4,46,i+8,56);R(b,'#e8fbfa',i+3,46,2,1)}}});
+god('Apollo','Trojans. Power: plague arrows',{sky:'#3a1626',sky2:'#4a1e30',halo:'#ffb03a',robe:'#f2c14a',shade:'#c99a2a',back:b=>{circ(b,'#ff9a2a',24,13,8);for(let k=0;k<8;k++){const a=k*Math.PI/4,cx=24+Math.cos(a)*12,cy=13+Math.sin(a)*12;circ(b,'#ffd34a',cx,cy,1)}},draw:x=>{
+circ(x,'#f2c14a',24,11,5,true);[[19,13],[29,13],[19,15],[29,15]].forEach(([a,c])=>R(x,'#f2c14a',a,c,1,2));[[20,9],[23,7],[27,9]].forEach(([a,c])=>R(x,GH,a,c));
+for(let t=-1.1;t<=1.1;t+=0.05)R(x,'#8a5a28',30+Math.cos(t)*10,30+Math.sin(t)*10);R(x,'#f4efe0',35,21,1,19);R(x,SK,32,28,4,2)}});
+god('Ares','Trojans. Power: enemies enraged',{sky:'#2a0c0c',sky2:'#3a1010',halo:'#ff5a3a',robe:'#8a2a2a',shade:'#5e1a1a',draw:x=>{
+circ(x,'#d8342c',24,5,6,true);circ(x,'#3a2a2a',24,12,5,true,'#241818');R(x,'#3a2a2a',19,12,2,5);R(x,'#3a2a2a',27,12,2,5);R(x,'#6a5a5a',21,8);
+tri(x,'#9aa4b0',17,19,31,19,24,30);tri(x,'#6e7884',24,19,31,19,24,30);R(x,'#d8342c',23,22,2,4);
+R(x,'#5a3a20',35,4,1,46);tri(x,'#dfe6ee',35,0,33,5,37,5);R(x,SK,32,20,3,2)}});
+god('Aphrodite','Trojans. Power: rescues a fallen unit',{sky:'#331632',sky2:'#43203f',halo:'#ffc0d6',robe:'#e88aa8',shade:'#c06a88',behind:x=>{tri(x,'#f2c14a',17,10,31,10,24,34);tri(x,'#d9a032',24,10,31,10,24,34)},draw:x=>{
+circ(x,'#f2c14a',24,11,5,true);R(x,'#e88aa8',27,8,2,2);R(x,'#ff5a7a',27,8);
+R(x,'#f4efe0',8,26,5,2);R(x,'#f4efe0',9,25,2,1);tri(x,'#f4efe0',10,26,13,26,12,22);R(x,INK,8,26);R(x,SK,14,27,3,2);
+R(x,'#ff5a7a',34,20,2,2);R(x,'#3f8a5a',34,22,1,4);R(x,SK,32,22,3,2)}});
+
+const pal=[['#f7e3bd','sky cream'],['#efc08a','sand'],['#f08a4b','sun'],['#d29a5e','clay tile'],['#b5783f','deep clay'],['#7a4a20','umber'],['#2a1a10','ink'],['#e0a83a','bronze'],['#ffe9a0','gold hi'],['#d8342c','Greek red'],['#3a62c0','Achaean blue'],['#3f8a5a','olive'],['#6b9480','sage hill'],['#8a2a3a','Trojan wine'],['#7a3a9a','Trojan purple'],['#9aa4b0','iron'],['#f0b888','skin'],['#c45a3c','threat tile']];
+document.getElementById('pal').innerHTML=pal.map(([c,n])=>`<div class="sw"><div style="background:${c}"></div>${c}<br>${n}</div>`).join('');
+</script>
+</body>
+</html>
