@@ -55,7 +55,7 @@ The rules engine (`src/core/`) implements exactly this document. If they disagre
 - **Paris** (boss archer, HP 3, move 2): arrow; always aims at Achilles when he has a straight line to him.
 
 ### Enemy AI (deterministic)
-For each enemy in number order: consider every tile it can reach (including staying) and each of the 4 directions; score the attack that would result *if no one moved*: +10 per hero hit (+20 for Patroclus, +30 Achilles for Paris), +8 per ship hit, −6 per Trojan hit; prefer fewer tiles moved; ties break by fixed direction order (up, right, down, left) then row-major tile order. If no attack scores above 0, step toward the nearest hero (BFS) and face it. Chariots don't move; they only choose a facing.
+For each enemy in number order: consider every tile it can reach (including staying) and each of the 4 directions; score the attack that would result *if no one moved*: +10 per hero hit (+20 for Patroclus, +30 Achilles for Paris), +8 per ship hit, −6 per Trojan hit; prefer fewer tiles moved; ties break by row-major tile order (staying put first), then direction order (up, right, down, left). If no attack scores above 0, step toward the nearest hero (BFS) and face it. Chariots don't move; they only choose a facing.
 
 ## 7. Tiles
 | Char | Tile | Rules |
@@ -63,14 +63,14 @@ For each enemy in number order: consider every tile it can reach (including stay
 | `.` / `,` | ground / sand | passable |
 | `#` | rock / wall | blocks movement and arrows |
 | `~` | deep water (Scamander) | impassable; pushed units are swept away |
-| `S` | Greek ship (HP 2) | blocks; takes damage; objective target |
+| `S` | Greek ship (HP 2) | blocks; takes damage; objective target; a ship next to fire takes 1 fire damage each enemy phase |
 | `^` | fire | units ending the enemy phase in fire take 1 fire damage |
 | `%` | dry brush | fire spreads into adjacent brush 1 tile per enemy phase; a unit standing on brush **stops** the spread there but takes 1 fire damage |
 | `G` | gate | passable objective tile |
 | `*` | torchlight | stealth: a hero standing in light at the end of the player phase is seen |
 
 ## 8. Objectives
-`rout` (defeat all Trojans) · `survive N turns` · `protect` (keep at least `minShips` ships until turn N) · `escort` (a named hero reaches a tile) · `stealth` (all heroes reach the gate, none seen; sentries see along their facing up to 3 tiles, and lit tiles count as seen).
+`rout` (defeat all Trojans) · `survive N turns` · `protect` (keep at least `minShips` ships until turn N) · `escort` (a named hero reaches a tile) · `stealth` (all heroes reach the gate by any means: walking, push, swap or wave; none seen; sentries see along their facing up to 3 tiles, and lit tiles count as seen).
 **Lose:** every hero fallen, the objective fails (ships lost, escort fallen, seen), or `maxTurns` passes (default par + 4): "Night falls on the plain."
 
 ## 9. Kleos (3 stars per level)
@@ -79,7 +79,7 @@ For each enemy in number order: consider every tile it can reach (including stay
 ## 10. Patron favors (pick one patron per level; one use per level)
 - **Zeus:** lightning deals 2 divine damage to any one tile.
 - **Athena:** one hero who has acted gets a second action this turn.
-- **Poseidon:** a wave along a chosen row or column pushes every unit in it 1 tile in the chosen direction, starting from the leading end (a chain moves together; only the lead can collide). Also puts out fire in that line.
+- **Poseidon:** a wave along a chosen row or column pushes every unit in it 1 tile in the chosen direction, one by one from the leading end. A free chain moves together; if the lead is blocked, each unit behind bumps into the one ahead (normal push collisions). Also puts out fire in that line.
 Unlocks: Zeus from L1, Athena from L3, Poseidon from L6.
 
 ## 11. Trojan god events (level modifiers, always telegraphed a turn ahead)

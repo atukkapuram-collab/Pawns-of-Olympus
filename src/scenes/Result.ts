@@ -7,7 +7,7 @@ import { C } from '../art/palette';
 import { PixelBuffer } from '../art/pixels';
 import { panel } from '../art/ui';
 import { kleos } from '../core/rules';
-import type { GameState } from '../core/types';
+import type { GameState, PatronId } from '../core/types';
 import { LEVELS } from '../data/levels/index';
 import { t } from '../data/strings';
 import { DEPTH } from '../view/BoardView';
@@ -21,6 +21,7 @@ export interface ResultData {
   levelId: string;
   won: boolean;
   state: GameState;
+  patron?: PatronId | null;
 }
 
 const LOSE_LINE: Record<string, string> = {
@@ -69,11 +70,11 @@ export class ResultScene extends Phaser.Scene {
       const bw = 70;
       if (next) this.buttons.push(addButton(this, x + W - bw - 10, y + H - 30, bw, 14, t('ui.next'), () => this.go(next.id), 'E'));
       else this.buttons.push(addButton(this, x + W - bw - 10, y + H - 30, bw, 14, 'Title', () => this.toTitle(), 'E'));
-      this.buttons.push(addButton(this, x + 10, y + H - 30, bw, 14, t('ui.retry'), () => this.go(level.id), 'R'));
+      this.buttons.push(addButton(this, x + 10, y + H - 30, bw, 14, t('ui.retry'), () => this.go(level.id, data.patron), 'R'));
     } else {
       this.centerText(y + 18, t('ui.defeat'), C.ink);
       this.centerText(y + 34, LOSE_LINE[data.state.loseReason ?? 'heroes'] ?? '', C.umber);
-      this.buttons.push(addButton(this, x + 10, y + H - 30, 64, 14, t('ui.retry'), () => this.go(level.id), 'R'));
+      this.buttons.push(addButton(this, x + 10, y + H - 30, 64, 14, t('ui.retry'), () => this.go(level.id, data.patron), 'R'));
       this.buttons.push(addButton(this, x + W - 96 - 10, y + H - 30, 96, 14, t('ui.undoLastTurn'), () => battle.undoLastTurn(), 'Z'));
     }
     for (const b of this.buttons) b.img.setDepth(d + 2);
@@ -92,9 +93,9 @@ export class ResultScene extends Phaser.Scene {
     img.x = Math.round((320 - img.width) / 2);
   }
 
-  private go(levelId: string): void {
+  private go(levelId: string, patron?: PatronId | null): void {
     this.scene.stop('Result');
-    this.scene.start('Battle', { levelId });
+    this.scene.start('Battle', patron === undefined ? { levelId } : { levelId, patron });
   }
 
   private toTitle(): void {

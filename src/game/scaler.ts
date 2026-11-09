@@ -16,15 +16,20 @@ export function computeScale(viewW: number, viewH: number, dpr: number): { facto
 
 export function attachIntegerScaler(canvas: HTMLCanvasElement, onChange?: (factor: number) => void): () => void {
   const apply = (): void => {
-    const host = canvas.parentElement ?? document.body;
-    const rect = host.getBoundingClientRect();
-    const { factor, cssW, cssH } = computeScale(rect.width || window.innerWidth, rect.height || window.innerHeight, window.devicePixelRatio || 1);
+    const vv = window.visualViewport;
+    const cs = getComputedStyle(document.body);
+    const padX = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight) || 0;
+    const padY = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom) || 0;
+    const vw = (vv?.width ?? window.innerWidth) - padX, vh = (vv?.height ?? window.innerHeight) - padY;
+    const { factor, cssW, cssH } = computeScale(vw, vh, window.devicePixelRatio || 1);
     canvas.style.width = `${cssW}px`;
     canvas.style.height = `${cssH}px`;
     onChange?.(factor);
   };
   apply();
   window.addEventListener('resize', apply);
+  window.visualViewport?.addEventListener('resize', apply);
+  window.addEventListener('orientationchange', apply);
   const mq = window.matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`);
   mq.addEventListener?.('change', apply);
   return () => window.removeEventListener('resize', apply);

@@ -62,16 +62,15 @@ test('keyboard can play a turn', async ({ page }, info) => {
   test.skip(info.project.name === 'touch', 'keyboard test runs on desktop');
   await page.goto('./?level=a1-01');
   await waitScene(page, 'Battle');
+  await settle(page);
   await page.locator('#game canvas').click({ position: { x: 5, y: 5 } });
+  await page.waitForTimeout(100);
   // Achilles starts selected at (1,3); cursor starts at him
   await page.keyboard.press('Tab');
   for (const k of ['ArrowRight', 'ArrowRight', 'ArrowRight']) await page.keyboard.press(k);
   await page.keyboard.press('Enter');
+  await page.waitForFunction(() => { const u = window.__POO__!.battle()!.state.units.find((v) => v.id === 'achilles')!; return u.x === 4 && u.y === 3; }, null, { timeout: 5000 });
   await settle(page);
-  const pos = await page.evaluate(() => { const u = window.__POO__!.battle()!.state.units.find((v) => v.id === 'achilles')!; return [u.x, u.y]; });
-  expect(pos).toEqual([4, 3]);
   await page.keyboard.press('KeyE');
-  await page.waitForTimeout(100);
-  await settle(page);
-  expect(await page.evaluate(() => window.__POO__!.battle()!.state.turn)).toBe(2);
+  await page.waitForFunction(() => window.__POO__!.battle()!.state.turn === 2, null, { timeout: 5000 });
 });

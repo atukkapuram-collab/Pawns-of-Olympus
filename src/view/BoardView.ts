@@ -179,6 +179,22 @@ export class BoardView {
     v.pips.setPosition(Math.round(v.sprite.x + v.sprite.width / 2 - Math.floor(v.pips.width / 2)), Math.round(v.sprite.y - 5 + top)).setDepth(v.sprite.depth + 1);
   }
 
+  /** Update one unit's HP pips mid-animation. */
+  setPips(id: string, hp: number, max: number, team: 'greek' | 'trojan'): void {
+    const v = this.units.get(id);
+    if (!v) return;
+    v.pips.setTexture(this.tex(`pips|${hp}|${max}|${team}`, () => hpPips(hp, max, team)));
+  }
+
+  /** Hide selection marks while an action plays out. */
+  clearSelection(): void {
+    this.chevron?.setVisible(false);
+    for (const d of this.dynamic) {
+      const img = d as Phaser.GameObjects.Image;
+      if (img.texture?.key?.startsWith('ov|select') || img.texture?.key === 'ov|move' || img.texture?.key === 'ov|target' || img.texture?.key === 'ov|cursor') img.setVisible(false);
+    }
+  }
+
   setPose(id: string, pose: Pose | 'flash'): void {
     const v = this.units.get(id);
     if (v) v.sprite.setTexture(this.unitTex(v.type, pose));
@@ -211,6 +227,10 @@ export class BoardView {
   private add(img: Phaser.GameObjects.Image): Phaser.GameObjects.Image {
     this.dynamic.push(img);
     return img;
+  }
+
+  showFire(s: GameState): void {
+    this.drawFire(s);
   }
 
   private drawFire(s: GameState): void {

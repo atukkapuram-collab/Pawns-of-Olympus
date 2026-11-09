@@ -1,0 +1,37 @@
+{
+  "id": "a1-04",
+  "act": 1,
+  "index": 4,
+  "title": "Fire at the Ships",
+  "teaches": "Fire runs along dry brush. A hero standing in the brush stops it, at a cost.",
+  "backdrop": "beach",
+  "board": [
+    ",S,,,S,",
+    "%%%%%%%",
+    "^......",
+    ".......",
+    "......."
+  ],
+  "legend": {},
+  "units": [
+    {"type": "achilles", "x": 3, "y": 3},
+    {"type": "ajax", "x": 4, "y": 4},
+    {"type": "spearman", "x": 6, "y": 3, "facing": "left"},
+    {"type": "archer", "x": 6, "y": 2, "facing": "up"}
+  ],
+  "objective": {"type": "protect", "target": "ships", "turns": 4, "minShips": 2},
+  "patrons": ["zeus", "athena"],
+  "trojanEvent": null,
+  "par": 4,
+  "intro": "lvl.a1-04.intro",
+  "outro": "lvl.a1-04.outro",
+  "solution": {
+    "patron": "zeus",
+    "turns": [
+      [["favor", "zeus", 6, 2], ["move", "achilles", 2, 1], ["move", "ajax", 5, 3], ["act", "ajax", "strike", 6, 3], ["endTurn"]],
+      [["move", "achilles", 1, 1], ["act", "ajax", "strike", 6, 3], ["endTurn"]],
+      [["endTurn"]],
+      [["endTurn"]]
+    ]
+  }
+}

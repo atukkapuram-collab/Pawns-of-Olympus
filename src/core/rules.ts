@@ -86,10 +86,6 @@ export function applyAction(input: GameState, action: Action): ApplyResult {
       u.y = action.y;
       u.moved = true;
       ev.push({ t: 'move', unit: u.id, path });
-      if (tileAt(s, u.x, u.y) === 'gate' && s.objective.type === 'stealth') {
-        u.escaped = true;
-        ev.push({ t: 'escape', unit: u.id });
-      }
       break;
     }
     case 'act': {
@@ -359,6 +355,12 @@ function checkImmediate(s: GameState, ev: GameEvent[]): void {
     if (e && onBoard(e) && e.x === o.x && e.y === o.y) win(s, ev, s.turn);
   }
   if (o.type === 'stealth') {
+    for (const u of s.units) {
+      if (u.team === 'greek' && onBoard(u) && tileAt(s, u.x, u.y) === 'gate') {
+        u.escaped = true;
+        ev.push({ t: 'escape', unit: u.id });
+      }
+    }
     const hs = s.units.filter((u) => u.team === 'greek' && u.alive);
     if (hs.length > 0 && hs.every((u) => u.escaped)) win(s, ev, s.turn);
   }

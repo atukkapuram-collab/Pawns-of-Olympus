@@ -5,7 +5,7 @@ Every god has: a role, an exact effect, a portrait (48×56, hourglass body, gold
 ## Patrons (chosen before a level; favor usable once per level)
 | God | Unlock | Effect | Halo | Item | Sound |
 |---|---|---|---|---|---|
-| **Zeus** | L1 | Lightning: 2 divine damage to any one tile | gold `#e0a83a` | zigzag thunderbolt | sharp crack + low rumble |
+| **Zeus** | L2 | Lightning: 2 divine damage to any one tile | gold `#e0a83a` | zigzag thunderbolt | sharp crack + low rumble |
 | **Athena** | L3 | One hero who has already acted gets a second action this turn | iron-white `#dfe6ee` | spear + aegis with ink Gorgoneion | owl-like two-note hoot, bright pluck |
 | **Poseidon** | L6 | Wave along a row/column pushes every unit 1 tile in a chosen direction; puts out fire in that line | sea `#1f7a8a` | trident | rising whoosh + spray noise |
 

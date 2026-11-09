@@ -146,9 +146,13 @@ export class BattleScene extends Phaser.Scene {
     if (!this.busy) this.refresh();
   }
 
+  private get covered(): boolean {
+    return this.scene.isActive('Result');
+  }
+
   private onPointer(p: Phaser.Input.Pointer): void {
     sfx.unlock();
-    if (this.busy) return;
+    if (this.busy || this.covered) return;
     const t = this.board.tileAtPoint(p.x, p.y, this.state);
     if (!t) return;
     this.cursor = p.wasTouch ? null : t;
@@ -178,7 +182,9 @@ export class BattleScene extends Phaser.Scene {
         return;
       }
       if (s.patron === 'athena' && !(here && here.team === 'greek' && here.acted)) { sfx.play('invalid'); return; }
-      if (!confirmed) { this.preview = { x, y }; this.info = here?.id ?? null; this.refresh(); return; }
+      const ownZeus = s.patron === 'zeus' && here?.team === 'greek';
+      const sure = confirmed && (!ownZeus || (this.preview?.x === x && this.preview?.y === y));
+      if (!sure) { this.preview = { x, y }; this.info = here?.id ?? null; sfx.play(ownZeus ? 'invalid' : 'tick'); this.refresh(); return; }
       this.preview = null;
       this.dispatch({ type: 'favor', god: s.patron!, x, y });
       return;
@@ -189,10 +195,19 @@ export class BattleScene extends Phaser.Scene {
     const isTarget = ui.targetTiles.some((t) => t.x === x && t.y === y);
     const isMove = ui.moveTiles.some((t) => t.x === x && t.y === y);
 
-    if (sel && isTarget) {
+    const allyTarget = !!here && here.team === 'greek' && isTarget;
+    if (sel && isTarget && (!allyTarget || (this.preview?.x === x && this.preview?.y === y))) {
       if (!confirmed) { this.preview = { x, y }; this.info = here?.id ?? null; sfx.play('select'); this.refresh(); return; }
       this.preview = null;
       this.dispatch({ type: 'act', unit: sel.id, ability: this.ability, x, y });
+      return;
+    }
+    if (allyTarget && sel) {
+      // first click on an ally the hero could push/swap: preview it; click again to act
+      this.preview = { x, y };
+      this.info = here!.id;
+      sfx.play('select');
+      this.refresh();
       return;
     }
     if (here && here.team === 'greek') {
@@ -225,6 +240,7 @@ export class BattleScene extends Phaser.Scene {
 
   private onKey(e: KeyboardEvent): void {
     sfx.unlock();
+    if (this.covered) return;
     if (e.repeat && !e.code.startsWith('Arrow')) return;
     const s = this.state;
     const k = e.code;
@@ -304,14 +320,14 @@ export class BattleScene extends Phaser.Scene {
   }
 
   endTurn(): void {
-    if (this.busy || this.state.phase !== 'player') return;
+    if (this.busy || this.covered || this.state.phase !== 'player') return;
     this.mode = 'idle';
     this.preview = null;
     this.dispatch({ type: 'endTurn' });
   }
 
   undo(): void {
-    if (this.busy) return;
+    if (this.busy || this.covered) return;
     if (this.session.undo()) {
       sfx.play('undo');
       this.mode = 'idle';
@@ -321,7 +337,7 @@ export class BattleScene extends Phaser.Scene {
   }
 
   restart(): void {
-    if (this.busy) return;
+    if (this.busy || this.covered) return;
     sfx.play('select');
     this.scene.stop('Result');
     this.scene.restart({ levelId: this.level.id, patron: this.session.patron });
@@ -369,7 +385,21 @@ export class BattleScene extends Phaser.Scene {
 
   private async play(events: GameEvent[]): Promise<void> {
     this.busy = true;
-    this.refresh();
+    try {
+      await this.animate(events);
+    } catch (err) {
+      console.warn('animation failed', err);
+    } finally {
+      this.busy = false;
+      this.afterPlay();
+    }
+  }
+
+  /** Plays events over the board as it was before the action (BUG-1). */
+  private async animate(events: GameEvent[]): Promise<void> {
+    // the board keeps showing the previous state; only the HUD updates (disabled buttons)
+    this.hud.update(this.state, false, true, null, false, this.selected, this.ability);
+    this.board.clearSelection();
     const unitOf = (id: string) => this.state.units.find((u) => u.id === id);
     for (const e of events) {
       switch (e.t) {
@@ -434,6 +464,7 @@ export class BattleScene extends Phaser.Scene {
           const u = unitOf(e.unit);
           if (!img || !u) break;
           this.board.setPose(e.unit, 'flash');
+          this.board.setPips(e.unit, e.hp, u.maxHp, u.team === 'trojan' ? 'trojan' : 'greek');
           sfx.play(e.kind === 'impact' ? 'bump' : 'hit');
           popNumber(this, img.x + 12, img.y + 2, `-${e.amount}`);
           await wait(this, 70);
@@ -503,14 +534,14 @@ export class BattleScene extends Phaser.Scene {
           break;
         }
         case 'phase': {
-          this.refresh();
+          if (e.phase === 'player') this.refresh();
           if (e.phase === 'enemy') await banner(this, 'Trojans act', C.cream, 420);
           else await banner(this, 'Your move', C.goldHi, 380);
           break;
         }
         case 'fireSpread':
           sfx.play('fire');
-          this.refresh();
+          this.board.showFire(this.state);
           await wait(this, 150);
           break;
         case 'plague':
@@ -532,7 +563,9 @@ export class BattleScene extends Phaser.Scene {
           break;
       }
     }
-    this.busy = false;
+  }
+
+  private afterPlay(): void {
     // keep a sensible selection
     const sel = this.selected ? unitById(this.state, this.selected) : undefined;
     if (!sel || !onBoard(sel)) this.select(this.heroes()[0]?.id ?? null);
@@ -543,10 +576,12 @@ export class BattleScene extends Phaser.Scene {
     this.refresh();
     const s = this.state;
     if (s.phase === 'won' || s.phase === 'lost') {
-      await wait(this, 350);
-      sfx.play(s.phase === 'won' ? 'victory' : 'defeat');
-      this.scene.launch('Result', { levelId: this.level.id, won: s.phase === 'won', state: s });
-      this.scene.bringToTop('Result');
+      this.time.delayedCall(350, () => {
+        if (this.state.phase !== s.phase) return;
+        sfx.play(s.phase === 'won' ? 'victory' : 'defeat');
+        this.scene.launch('Result', { levelId: this.level.id, won: s.phase === 'won', state: s, patron: this.session.patron });
+        this.scene.bringToTop('Result');
+      });
     }
     for (const w of this.settleWaiters.splice(0)) w();
   }

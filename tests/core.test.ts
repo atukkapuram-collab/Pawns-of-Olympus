@@ -248,6 +248,22 @@ describe('hazards and gods', () => {
     expect(applyAction(s0, { type: 'favor', god: 'poseidon', x: 0, y: 1 }).error).toBeTruthy();
   });
 
+  it('Poseidon: a blocked lead is bumped by each unit behind it', () => {
+    const s0 = mkState(['......', '......', '......'], [{ type: 'odysseus', x: 0, y: 2 }, { type: 'hector', x: 3, y: 1, facing: 'up' }, { type: 'hector', x: 4, y: 1, facing: 'up' }, { type: 'hector', x: 5, y: 1, facing: 'up' }], {}, 'poseidon');
+    const { s } = run(s0, { type: 'favor', god: 'poseidon', x: 0, y: 1, dir: 'right' });
+    // lead (5,1) hits the edge: 1; then (4,1) bumps it: 1 each; then (3,1) bumps (4,1): 1 each
+    expect(u(s, 'hector-3').hp).toBe(4);
+    expect(u(s, 'hector-2').hp).toBe(4);
+    expect(u(s, 'hector-1').hp).toBe(5);
+  });
+
+  it('stealth: a hero pushed onto the gate escapes too', () => {
+    const s0 = mkState(['....G', '.....', '.....'], [{ type: 'diomedes', x: 2, y: 0 }, { type: 'odysseus', x: 3, y: 0 }, { type: 'spearman', x: 0, y: 2, facing: 'down' }], { objective: { type: 'stealth' } });
+    const { s, ev } = run(s0, act('diomedes', 'push', 3, 0));
+    expect(ev.some((e) => e.t === 'escape' && e.unit === 'odysseus')).toBe(true);
+    expect(u(s, 'odysseus').escaped).toBe(true);
+  });
+
   it('Ares: +1 damage on listed turns', () => {
     const s0 = mkState(OPEN6, [{ type: 'odysseus', x: 1, y: 1 }, { type: 'spearman', x: 2, y: 1, facing: 'left' }], { trojanEvent: { ares: { turns: [1] } }, objective: { type: 'survive', turns: 4 } });
     expect(s0.ares).toBe(true);
