@@ -1,0 +1,37 @@
+{
+  "id": "a1-05",
+  "act": 1,
+  "index": 5,
+  "title": "The Man of Many Turns",
+  "teaches": "Swap a Trojan into place and its own attack lands on its friends.",
+  "backdrop": "beach",
+  "board": [
+    ".......",
+    ".......",
+    ".#.....",
+    ".......",
+    "......."
+  ],
+  "legend": {},
+  "units": [
+    {"type": "odysseus", "x": 1, "y": 3},
+    {"type": "ajax", "x": 3, "y": 1},
+    {"type": "spearman", "x": 2, "y": 1, "facing": "right"},
+    {"type": "archer", "x": 3, "y": 3, "facing": "left"},
+    {"type": "spearman", "x": 6, "y": 4, "facing": "left"}
+  ],
+  "objective": {"type": "rout"},
+  "patrons": ["zeus", "athena"],
+  "trojanEvent": null,
+  "par": 4,
+  "intro": "lvl.a1-05.intro",
+  "outro": "lvl.a1-05.outro",
+  "solution": {
+    "patron": "zeus",
+    "turns": [
+      [["move", "odysseus", 2, 3], ["act", "odysseus", "swap", 2, 1], ["endTurn"]],
+      [["act", "odysseus", "strike", 2, 2], ["move", "ajax", 3, 2], ["act", "ajax", "strike", 2, 2], ["endTurn"]],
+      [["move", "odysseus", 4, 1], ["act", "odysseus", "strike", 4, 2], ["act", "ajax", "strike", 4, 2]]
+    ]
+  }
+}

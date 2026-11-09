@@ -9,7 +9,7 @@ Format and principles: `.claude/skills/pawns-level-design/SKILL.md`. Rules: `doc
 | 2 | a1-02 | Arrows from the Dunes | Archers and lines of fire | Zeus | — | 3 |
 | 3 | a1-03 | Ajax Holds | Tower shield; stand in the line to shelter others | Zeus, Athena | — | 4 |
 | 4 | a1-04 | Fire at the Ships | Protect an objective; fire spreads along brush | Zeus, Athena | — | 4 |
-| 5 | a1-05 | The Man of Many Turns | Swap an enemy so its attack hits another Trojan | Zeus, Athena | — | tbd |
+| 5 | a1-05 | The Man of Many Turns | Swap an enemy so its attack hits another Trojan | Zeus, Athena | — | 4 |
 | 6 | a2-01 | The River Scamander | Push into deep water | all | — | tbd |
 | 7 | a2-02 | Chariots | Charge lanes; redirect a charge into Trojans | all | — | tbd |
 | 8 | a2-03 | In Borrowed Armor | Patroclus draws every attack; decoy routing | all | — | tbd |
