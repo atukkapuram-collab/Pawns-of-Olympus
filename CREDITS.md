@@ -7,7 +7,7 @@ All art, the bitmap font, the music and the sound effects are made in code in th
 
 ## Libraries and tools
 - Phaser 4: MIT license, https://phaser.io
-- ZzFX by Frank Force: MIT license, https://github.com/KilledByAPixel/ZzFX
+- Sound and music synthesis: written for this project (ZzFX-style parameter sounds, Karplus-Strong plucked string); no third-party audio code or samples.
 - Vite, Vitest, TypeScript, ESLint, Playwright: MIT / Apache-2.0
 
 ## Texts
