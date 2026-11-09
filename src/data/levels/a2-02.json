@@ -1,0 +1,39 @@
+{
+  "id": "a2-02",
+  "act": 2,
+  "index": 7,
+  "title": "Chariots",
+  "teaches": "A chariot charges down its line until something stops it. Make that something a Trojan, or nothing at all.",
+  "backdrop": "plain",
+  "board": [
+    ".......",
+    ".......",
+    "..#....",
+    ".......",
+    "....#..",
+    "......."
+  ],
+  "legend": {},
+  "units": [
+    { "type": "odysseus", "x": 3, "y": 3 },
+    { "type": "diomedes", "x": 2, "y": 5 },
+    { "type": "chariot", "x": 0, "y": 1, "facing": "right" },
+    { "type": "chariot", "x": 6, "y": 3, "facing": "left" },
+    { "type": "spearman", "x": 4, "y": 0, "facing": "down" },
+    { "type": "spearman", "x": 5, "y": 5, "facing": "left" }
+  ],
+  "objective": { "type": "rout" },
+  "patrons": ["zeus", "athena", "poseidon"],
+  "trojanEvent": null,
+  "par": 3,
+  "intro": "lvl.a2-02.intro",
+  "outro": "lvl.a2-02.outro",
+  "solution": {
+    "patron": "zeus",
+    "turns": [
+      [["favor", "zeus", 0, 1], ["move", "diomedes", 4, 5], ["act", "diomedes", "push", 5, 5], ["move", "odysseus", 4, 3], ["act", "odysseus", "swap", 4, 0], ["endTurn"]],
+      [["move", "odysseus", 4, 3], ["act", "odysseus", "strike", 5, 3], ["endTurn"]],
+      [["move", "diomedes", 5, 5], ["act", "diomedes", "push", 5, 4]]
+    ]
+  }
+}

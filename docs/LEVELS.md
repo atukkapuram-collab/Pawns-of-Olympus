@@ -1,4 +1,4 @@
-# Levels
+Boss sweep and Ares; escort Diomedes to the gate 4 |Plague marks where you stand; keep moving 3 |Patroclus draws every attack; escort Ajax past 4 |Charges run until blocked; aim them at Trojans 3 |Push into deep water with Diomedes' spear 3 |# Levels
 
 Format and principles: `.claude/skills/pawns-level-design/SKILL.md`. Rules: `docs/GDD.md`. Data: `src/data/levels/*.json`.
 

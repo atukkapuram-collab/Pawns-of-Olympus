@@ -22,3 +22,6 @@ Format: decision · options considered · why.
 18. **Ships burn when next to fire** (not on brush), so fire threatens ships along brush lanes in Fire at the Ships.
 19. **Stealth: heroes who step on the gate leave the board**; win when every living hero is out. Sentries see 3 tiles along their facing; standing in torchlight at the end of the player phase also counts as seen.
 20. **Enemy order numbers are fixed at the start of the enemy phase**, so a Trojan killed mid-phase doesn't renumber the rest.
+21. **a2-05 "Hector at the Gates" is an escort, not a rout.** The story has Hector withdraw unbeaten in Act II and fall in Act III; a rout would kill him early. Win = Diomedes reaches the gate.
+22. **Plague stays as built** (marks the tiles heroes stand on; hits at the end of the next enemy phase). It teaches "keep moving" more than "shelter under Ajax". Kept because it is readable; the finale combines it with other threats to make it bite.
+23. **Diomedes' spear push moves allies without damage.** Legal per GDD §5; players can use it to give a slow ally an extra tile.

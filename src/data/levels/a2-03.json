@@ -1,0 +1,38 @@
+{
+  "id": "a2-03",
+  "act": 2,
+  "index": 8,
+  "title": "In Borrowed Armor",
+  "teaches": "Patroclus wears Achilles' armor, and every Trojan goes for him first. Lead them away and Ajax walks through.",
+  "backdrop": "plain",
+  "board": [
+    ".......",
+    "#.#.#.#",
+    ".......",
+    "#.#.#.#",
+    "......."
+  ],
+  "legend": {},
+  "units": [
+    { "type": "ajax", "x": 0, "y": 2 },
+    { "type": "patroclus", "x": 1, "y": 4 },
+    { "type": "spearman", "x": 2, "y": 2, "facing": "left" },
+    { "type": "spearman", "x": 4, "y": 2, "facing": "left" },
+    { "type": "spearman", "x": 5, "y": 0, "facing": "left" },
+    { "type": "archer", "x": 6, "y": 4, "facing": "left" }
+  ],
+  "objective": { "type": "escort", "unit": "ajax", "x": 6, "y": 2 },
+  "patrons": ["zeus", "athena", "poseidon"],
+  "trojanEvent": null,
+  "par": 4,
+  "intro": "lvl.a2-03.intro",
+  "outro": "lvl.a2-03.outro",
+  "solution": {
+    "patron": "zeus",
+    "turns": [
+      [["favor", "zeus", 2, 2], ["move", "patroclus", 3, 4], ["move", "ajax", 2, 2], ["endTurn"]],
+      [["move", "patroclus", 5, 4], ["act", "patroclus", "strike", 6, 4], ["move", "ajax", 4, 2], ["endTurn"]],
+      [["move", "ajax", 6, 2]]
+    ]
+  }
+}

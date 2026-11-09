@@ -1,0 +1,39 @@
+{
+  "id": "a2-05",
+  "act": 2,
+  "index": 10,
+  "title": "Hector at the Gates",
+  "teaches": "Hector sweeps the three tiles in front of him, and on Ares turns he hits harder. Get Diomedes to the gate past him.",
+  "backdrop": "walls",
+  "board": [
+    "###G####",
+    "........",
+    "........",
+    "..#..#..",
+    "........",
+    "........"
+  ],
+  "legend": {},
+  "units": [
+    { "type": "ajax", "x": 4, "y": 4 },
+    { "type": "diomedes", "x": 2, "y": 5 },
+    { "type": "spearman", "x": 1, "y": 1, "facing": "down" },
+    { "type": "spearman", "x": 6, "y": 1, "facing": "down" },
+    { "type": "archer", "x": 7, "y": 2, "facing": "left" },
+    { "type": "hector", "x": 3, "y": 1, "facing": "down" }
+  ],
+  "objective": { "type": "escort", "unit": "diomedes", "x": 3, "y": 0 },
+  "patrons": ["zeus", "athena", "poseidon"],
+  "trojanEvent": { "ares": { "turns": [2, 4] } },
+  "par": 4,
+  "intro": "lvl.a2-05.intro",
+  "outro": "lvl.a2-05.outro",
+  "solution": {
+    "patron": "zeus",
+    "turns": [
+      [["move", "diomedes", 3, 4], ["move", "ajax", 4, 2], ["endTurn"]],
+      [["move", "diomedes", 3, 2], ["act", "diomedes", "push", 2, 2], ["move", "ajax", 6, 2], ["act", "ajax", "strike", 7, 2], ["endTurn"]],
+      [["move", "diomedes", 3, 0]]
+    ]
+  }
+}

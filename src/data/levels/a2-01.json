@@ -1,0 +1,39 @@
+{
+  "id": "a2-01",
+  "act": 2,
+  "index": 6,
+  "title": "The River Scamander",
+  "teaches": "Diomedes' spear pushes. Push a Trojan into deep water and the river takes him.",
+  "backdrop": "plain",
+  "board": [
+    "~~~~...",
+    ".~~~...",
+    "...~~..",
+    ".......",
+    ".......",
+    "......."
+  ],
+  "legend": {},
+  "units": [
+    { "type": "diomedes", "x": 1, "y": 5 },
+    { "type": "ajax", "x": 3, "y": 5 },
+    { "type": "spearman", "x": 2, "y": 2, "facing": "down" },
+    { "type": "spearman", "x": 5, "y": 1, "facing": "down" },
+    { "type": "spearman", "x": 6, "y": 3, "facing": "left" },
+    { "type": "archer", "x": 4, "y": 0, "facing": "down" }
+  ],
+  "objective": { "type": "rout" },
+  "patrons": ["zeus", "athena", "poseidon"],
+  "trojanEvent": null,
+  "par": 3,
+  "intro": "lvl.a2-01.intro",
+  "outro": "lvl.a2-01.outro",
+  "solution": {
+    "patron": "zeus",
+    "turns": [
+      [["favor", "zeus", 6, 3], ["move", "ajax", 5, 5], ["move", "diomedes", 1, 3], ["endTurn"]],
+      [["move", "ajax", 5, 4], ["act", "ajax", "strike", 5, 3], ["act", "diomedes", "push", 1, 2], ["endTurn"]],
+      [["move", "ajax", 5, 2], ["act", "ajax", "strike", 5, 1]]
+    ]
+  }
+}

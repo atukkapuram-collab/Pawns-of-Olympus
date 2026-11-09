@@ -1,0 +1,40 @@
+{
+  "id": "a2-04",
+  "act": 2,
+  "index": 9,
+  "title": "Apollo's Plague",
+  "teaches": "Apollo marks where your heroes stand, and his arrows fall there next turn. Keep moving, or stand under Ajax's shield.",
+  "backdrop": "plain",
+  "board": [
+    "~~.....",
+    ".......",
+    "..#....",
+    ".......",
+    "....#..",
+    "......."
+  ],
+  "legend": {},
+  "units": [
+    { "type": "ajax", "x": 2, "y": 4 },
+    { "type": "diomedes", "x": 2, "y": 5 },
+    { "type": "spearman", "x": 1, "y": 1, "facing": "down" },
+    { "type": "archer", "x": 6, "y": 4, "facing": "left" },
+    { "type": "spearman", "x": 5, "y": 2, "facing": "left" },
+    { "type": "archer", "x": 3, "y": 0, "facing": "down" },
+    { "type": "spearman", "x": 6, "y": 0, "facing": "left" }
+  ],
+  "objective": { "type": "rout" },
+  "patrons": ["zeus", "athena", "poseidon"],
+  "trojanEvent": { "apollo": { "every": 1, "from": 1 } },
+  "par": 3,
+  "intro": "lvl.a2-04.intro",
+  "outro": "lvl.a2-04.outro",
+  "solution": {
+    "patron": "zeus",
+    "turns": [
+      [["favor", "zeus", 6, 0], ["move", "diomedes", 3, 4], ["act", "diomedes", "push", 2, 4], ["move", "ajax", 1, 2], ["act", "ajax", "strike", 1, 1], ["endTurn"]],
+      [["move", "diomedes", 4, 3], ["act", "diomedes", "push", 5, 3], ["move", "ajax", 2, 3], ["endTurn"]],
+      [["act", "diomedes", "push", 4, 2]]
+    ]
+  }
+}

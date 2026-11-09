@@ -122,7 +122,7 @@ export const STRINGS: Record<string, string> = {
   'lvl.a2-04.intro': 'Apollo marks the ground. Keep moving.',
   'lvl.a2-04.pre.1': 'Apollo sent a plague once. Nine days of it.',
   'lvl.a2-04.pre.2': 'Apollo: Stand still. It makes this easier.',
-  'lvl.a2-04.pre.3': 'Odysseus: Where his light falls, do not be.',
+  'lvl.a2-04.pre.3': 'Diomedes: Where his light falls, do not be.',
   'lvl.a2-04.post.1': 'Silver arrows rattle on empty ground.',
   'lvl.a2-04.post.2': 'Apollo: Next time I aim where they go.',
   'lvl.a2-04.outro': 'The arrows found only dust.',
