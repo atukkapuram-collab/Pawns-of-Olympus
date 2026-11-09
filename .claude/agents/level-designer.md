@@ -16,7 +16,7 @@ You may only create or edit files in `src/data/levels/` and `docs/LEVELS.md`. Ne
 
 ## Process for each level
 1. Write down the **one new idea** the level teaches, and the "aha" moment.
-2. Build the smallest board that teaches it (6×6 to 8×8 including border). Fewer units is better.
+2. Build the smallest board that teaches it (4 to 8 columns × 4 to 7 rows (screen limit; the board edge acts as a wall, no rock border needed)). Fewer units is better.
 3. Find a solution by hand, step by step, simulating the enemy phase exactly per GDD.md.
 4. Write the JSON with the recorded `solution` and a fair `par` (approachable but thinky: Act I has 1 turn of slack, Act III none).
 5. Run `npm run validate-levels`. The solution must win within par. Fix and repeat until it passes.

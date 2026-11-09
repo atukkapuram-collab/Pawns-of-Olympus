@@ -44,6 +44,6 @@ Settings live separately under `pawns-of-olympus/settings` (volumes, shake, redu
 - Night levels re-render the same recipes through a palette-swap map.
 
 ## How to add…
-- **A level:** add `src/data/levels/<id>.json` (format: `.claude/skills/pawns-level-design/SKILL.md`), add it to `src/data/levels/index.ts`, add strings to `src/data/strings.ts`, run `npm run validate-levels`.
+- **A level:** add `src/data/levels/<id>.json` (format: `.claude/skills/pawns-level-design/SKILL.md`), add strings to `src/data/strings.ts`, run `npm run validate-levels`.
 - **A unit:** add stats to `src/data/units.ts`, its intent shape (enemy) or ability (hero) in `src/core/`, a sprite recipe in `src/art/sprites/`, tests in `tests/`, a row in `docs/UNITS.md`.
 - **A god:** add to `src/data/gods.ts`, implement the favor/event in `src/core/gods.ts`, add portrait + manifestation recipes, sounds, strings, tests, and a row in `docs/GODS.md`.

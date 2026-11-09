@@ -55,7 +55,7 @@ export function validateLevelSchema(l: LevelData): string[] {
   if (!Array.isArray(l.board) || l.board.length === 0) { e.push('board must be a non-empty string array'); return e; }
   const w = l.board[0]!.length;
   if (l.board.some((r) => typeof r !== 'string' || r.length !== w)) e.push('board rows must all be strings of equal length');
-  if (w < 4 || w > 9 || l.board.length < 4 || l.board.length > 8) e.push(`board size ${w}x${l.board.length} outside 4..9 x 4..8`);
+  if (w < 4 || w > 8 || l.board.length < 4 || l.board.length > 7) e.push(`board size ${w}x${l.board.length} outside 4..8 wide x 4..7 tall (screen limit)`);
   const legend = { ...STANDARD_LEGEND, ...(l.legend ?? {}) };
   for (const v of Object.values(l.legend ?? {})) if (!TILE_KINDS.has(v)) e.push(`unknown legend value "${v}"`);
   for (const row of l.board) for (const ch of row) if (!legend[ch]) e.push(`board char "${ch}" not in legend`);

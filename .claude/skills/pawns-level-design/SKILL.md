@@ -39,7 +39,7 @@ Rules of play: `docs/GDD.md`. Campaign list: `docs/LEVELS.md`. Engine types: `sr
 
 ## Design principles
 1. **One new idea per level.** Name it in `teaches`. Everything else on the board should be familiar.
-2. **Smallest board that teaches it.** 6×6 to 8×8 including any rock border. Fewer units is better.
+2. **Smallest board that teaches it.** 4 to 8 columns × 4 to 7 rows (screen limit). The board edge is a wall; no rock border needed. Fewer units is better.
 3. **Every turn is a puzzle with a real choice**, never a single forced move. But there is always at least one clean solution.
 4. **Telegraphs are the puzzle.** The best moments make enemies hit each other, hit nothing, or get pushed into water.
 5. **Par is fair:** Act I has 1 turn of slack over the recorded solution, Act II about half a turn, Act III none.

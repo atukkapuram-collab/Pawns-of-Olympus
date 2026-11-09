@@ -1,10 +1,12 @@
-/** Campaign order. Add new levels here (and in docs/LEVELS.md). */
+/**
+ * Campaign: every `*.json` in this folder, ordered by act then index.
+ * To add a level, drop a JSON file here (format: .claude/skills/pawns-level-design).
+ */
 import type { LevelData } from '../../core/level';
-import a101 from './a1-01.json';
-import a102 from './a1-02.json';
-import a103 from './a1-03.json';
 
-export const LEVELS: LevelData[] = [a101, a102, a103] as unknown as LevelData[];
+const modules = import.meta.glob<LevelData>('./*.json', { eager: true, import: 'default' });
+
+export const LEVELS: LevelData[] = Object.values(modules).sort((a, b) => a.act - b.act || a.index - b.index);
 
 export function levelById(id: string): LevelData | undefined {
   return LEVELS.find((l) => l.id === id);
