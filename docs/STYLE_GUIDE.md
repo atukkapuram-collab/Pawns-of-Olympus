@@ -49,7 +49,7 @@ Condensed checklist for agents: `.claude/skills/pawns-art-style/SKILL.md`. Live 
 
 - Each character or god sprite uses **≤ 8 colors** (unit-tested).
 - Sprites store **palette indices**, so off-palette colors are impossible by construction; `tests/art.test.ts` also scans every texture's RGBA.
-- **Night ("red-figure") variant:** a palette remap (`NIGHT_REMAP`): ground and sky go to ink/dark umber/night clay, skin becomes sun orange, so figures read orange on near-black like red-figure ware.
+- **Night ("red-figure") variant:** a palette remap (`NIGHT_REMAP`): ground and sky go to ink/dark umber/night clay, skin becomes sun orange, so Greek figures read orange on near-black like red-figure ware. Trojans keep their wine, purple and iron at night so the two sides never merge.
 - **God halo colors:** Zeus bronze, Athena ironHi, Poseidon sea, Apollo sun, Ares red, Aphrodite rose.
 
 ## 3. Sizes

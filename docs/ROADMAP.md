@@ -14,7 +14,7 @@ Strict order. M3 is the playable-slice safety net. Mark items `[x]` when accepte
 - [x] **M5 Campaign** — all 15 levels validated, with par and Kleos; difficulty ramp; level linter.
 - [x] **M6 Screens and flow** — Boot, Title, Level select, Patron select, Battle, Victory, Defeat, act-intro + per-level scenes, Settings, Credits, Pause; save/load.
   *Accept:* e2e covers new game → Level 1 → level select → save persists after reload → settings persist.
-- [ ] **M7 Audio and juice** — all SFX, music, hit-stop, shake (toggle), pottery shatter, god manifestations, title animation, button feedback.
+- [x] **M7 Audio and juice** — all SFX, music, hit-stop, shake (toggle), pottery shatter, god manifestations, title animation, button feedback.
 - [ ] **M8 Polish** — review loop on every screen, impeccable audit; accessibility; 60 fps; small bundle; touch ergonomics.
 - [ ] **M9 Hardening** — `check` green; BUGS.md cleared; qa-tester over every level; static build verified; publishing steps in WORKFLOW.md.
 - [ ] **M10 Morning report** — `docs/MORNING_REPORT.md` marked FINAL.

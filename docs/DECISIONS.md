@@ -28,3 +28,7 @@ Format: decision · options considered · why.
 24. **a3-03 "Paris on the Walls" is an escort (Achilles reaches the gate)**, with Paris fixed in a tower above a stair. As a rout, Achilles simply sidestepped Paris's lines and Ajax was never needed.
 25. **a3-01 has no Ares**: with Ares, ending turns and letting the Trojans hit each other won within par.
 26. **Trojans stay a little clumsy** (an idle Trojan faces the nearest hero even if an ally is in the way; spearmen still value Achilles as a target though melee can't hurt him). Changing the AI now would invalidate the recorded solutions, and "the gods use mortals carelessly" fits the theme. Logged for a future tuning pass.
+27. **Night palette applies to Greeks only.** With every figure remapped to red-figure orange, the two sides were indistinguishable in The Wooden Gift. Trojans keep wine/iron.
+28. **Stealth sight lines are drawn** (sun-colored eye marks on the 3 tiles each sentry sees), because an invisible losing condition breaks the "every threat is obvious" pillar.
+29. **God manifestations are drawn at native 48x56**, not 64-96px: scaling a portrait up would mix pixel sizes, and a new 96px figure set was out of scope tonight.
+30. **Music and SFX are our own synth code (ZzFX-style parameter lists, Karplus-Strong lyre)** rather than vendoring ZzFX itself; no third-party audio code ships.
