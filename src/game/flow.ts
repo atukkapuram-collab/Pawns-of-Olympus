@@ -6,7 +6,7 @@
 import type Phaser from 'phaser';
 import { LEVELS, levelById } from '../data/levels/index';
 import { STRINGS } from '../data/strings';
-import type { PatronId } from '../core/types';
+import { newTopicsIn } from '../data/teach';
 import { loadSave, writeSave } from './save';
 
 export interface CutsceneData {
@@ -45,19 +45,34 @@ export function hasSeen(key: string): boolean {
   return loadSave().seenScenes.includes(key);
 }
 
-/** Begin a level the proper way (intro scenes as needed). */
-export function startLevel(scene: Phaser.Scene, levelId: string, patron?: PatronId | null): void {
+/**
+ * Begin a level the proper way:
+ * act intro (first time) -> pre-level scene (first time) -> intro cards for
+ * anything new (first time) -> briefing (always) -> battle.
+ */
+export function startLevel(scene: Phaser.Scene, levelId: string): void {
   const level = levelById(levelId) ?? LEVELS[0]!;
   const firstOfAct = LEVELS.find((l) => l.act === level.act)?.id === level.id;
-  const toBattle = { scene: 'Battle', data: { levelId: level.id, patron: patron ?? null } };
+  const tutorial = level.id === LEVELS[0]!.id && !loadSave().tutorialDone;
+  const briefing = { scene: 'Briefing', data: { levelId: level.id, tutorial } };
+  const fresh = newTopicsIn(level, LEVELS).filter((id) => !hasSeen(`card:${id}`));
+  const cards = fresh.length ? { scene: 'Cards', data: { ids: fresh, mode: 'intro', then: briefing } } : briefing;
   const pre = lines(`lvl.${level.id}.pre`, 4);
-  const afterPatron = pre.length && !hasSeen(`pre:${level.id}`) ? { scene: 'Cutscene', data: { kind: 'pre', act: level.act, levelId: level.id, then: toBattle } } : toBattle;
-  const patronStep = patron === undefined && level.patrons.length > 0 ? { scene: 'Patron', data: { levelId: level.id } } : afterPatron;
+  const afterAct = pre.length && !hasSeen(`pre:${level.id}`) ? { scene: 'Cutscene', data: { kind: 'pre', act: level.act, levelId: level.id, then: cards } } : cards;
   const first = firstOfAct && !hasSeen(`act:${level.act}`) && lines(`act.${level.act}.panel`, 4).length
-    ? { scene: 'Cutscene', data: { kind: 'act', act: level.act, levelId: level.id, then: patronStep } }
-    : patronStep;
+    ? { scene: 'Cutscene', data: { kind: 'act', act: level.act, levelId: level.id, then: afterAct } }
+    : afterAct;
   for (const s of scene.scene.manager.getScenes(true)) if (s.scene.key !== first.scene) s.scene.stop();
   scene.scene.start(first.scene, first.data);
+}
+
+/** Replay Level 1's guided tutorial (from Settings or the pause menu). */
+export function startTutorial(scene: Phaser.Scene): void {
+  for (const s of scene.scene.manager.getScenes(true)) if (s.scene.key !== 'Battle') s.scene.stop();
+  const b = scene.scene.manager.getScene('Battle');
+  const data = { levelId: LEVELS[0]!.id, patron: null, tutorial: true };
+  if (b.scene.isActive() || b.scene.isPaused()) b.scene.restart(data);
+  else scene.scene.start('Battle', data);
 }
 
 /** After a win: post scene (if any), then the next level or the map. */

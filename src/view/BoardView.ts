@@ -50,6 +50,8 @@ export class BoardView {
   private fireImgs: Phaser.GameObjects.Image[] = [];
   private waterImgs: Phaser.GameObjects.Image[] = [];
   private chevron: Phaser.GameObjects.Image | null = null;
+  /** Pulsing gold markers: goal tiles and protected ships. */
+  private goalImgs: Array<{ img: Phaser.GameObjects.Image; ship?: string; still?: boolean }> = [];
   private frame = 0;
   private timer: Phaser.Time.TimerEvent;
 
@@ -128,6 +130,32 @@ export class BoardView {
           this.waterImgs.push(img);
         }
       }
+  }
+
+  /**
+   * Goal markers: gold corner brackets on tiles to reach (escort, stealth
+   * gates) and a gold pennant over each ship you must protect. Two frames,
+   * swapped by the idle tick.
+   */
+  setGoals(tiles: Array<{ x: number; y: number }>, s: GameState): void {
+    for (const g of this.goalImgs) g.img.destroy();
+    this.goalImgs = [];
+    for (const t of tiles) {
+      const o = tileOrigin(this.layout, t.x, t.y);
+      this.goalImgs.push({ img: this.scene.add.image(o.px, o.py, this.tex('ov|goaldiamond', goalDiamond)).setOrigin(0, 0).setDepth(DEPTH.overlay + 3), still: true });
+      const img = this.scene.add.image(o.px, o.py, this.tex('ov|goal|0', () => goalMarker(0))).setOrigin(0, 0).setDepth(DEPTH.markers - 5);
+      this.goalImgs.push({ img });
+    }
+    if (s.objective.type === 'protect') {
+      for (const u of s.units) {
+        if (u.type !== 'ship') continue;
+        const v = this.units.get(u.id);
+        if (!v) continue;
+        const m = mastTop();
+        const img = this.scene.add.image(Math.round(v.sprite.x + m.x), Math.round(v.sprite.y + m.y - 7), this.tex('ov|pennant|0', () => pennant(0))).setOrigin(0, 0).setDepth(DEPTH.markers + 1);
+        this.goalImgs.push({ img, ship: u.id });
+      }
+    }
   }
 
   rowDepth(y: number): number {
@@ -363,6 +391,15 @@ export class BoardView {
     for (const f of this.fireImgs) f.setTexture(this.tex(`fire|${(this.frame + (f.getData('fx') as number)) % 2}`, () => T.fireSprite((this.frame + (f.getData('fx') as number)) % 2)));
     for (const w of this.waterImgs) w.setTexture(this.tex(`water|${(this.frame + (w.getData('phase') as number)) % 2}`, () => T.waterTile((this.frame + (w.getData('phase') as number)) % 2)));
     if (this.chevron?.visible) this.chevron.y += this.frame % 2 === 0 ? -1 : 1;
+    const f = this.frame % 2;
+    for (const g of this.goalImgs) {
+      if (g.ship) {
+        const v = this.units.get(g.ship);
+        g.img.setVisible(!!v?.sprite.visible);
+        if (v) { const m = mastTop(); g.img.setPosition(Math.round(v.sprite.x + m.x), Math.round(v.sprite.y + m.y - 7)); }
+        g.img.setTexture(this.tex(`ov|pennant|${f}`, () => pennant(f)));
+      } else if (!g.still) g.img.setTexture(this.tex(`ov|goal|${f}`, () => goalMarker(f)));
+    }
   }
 
   /** Tile under a game-space point, or null. */
@@ -381,4 +418,51 @@ export class BoardView {
       this.unitTex(t, 'flash');
     }
   }
+}
+
+/**
+ * Goal tile brackets: ink-backed gold corners that step in and out, drawn
+ * above units so a figure in front never hides the goal. No dither, so it
+ * never reads as a move tile.
+ */
+function goalMarker(frame: number): PixelBuffer {
+  const b = new PixelBuffer(T.TILE_W, 16);
+  const i = frame ? 2 : 0;
+  const w = T.TILE_W - 2 * i, h = 16 - 2 * i;
+  for (const [x, y, dx, dy] of [[i, i, 1, 1], [i + w - 1, i, -1, 1], [i, i + h - 1, 1, -1], [i + w - 1, i + h - 1, -1, -1]] as const) {
+    for (let k = 0; k < 4; k++) { b.set(x + dx * k, y, C.goldHi); b.set(x, y + dy * k, C.goldHi); }
+    for (let k = 1; k < 4; k++) { b.set(x + dx * k, y + dy, C.ink); b.set(x + dx, y + dy * k, C.ink); }
+  }
+  return b;
+}
+
+/** The goal's gold diamond, painted on the tile itself (drawn under units). */
+function goalDiamond(): PixelBuffer {
+  const b = new PixelBuffer(T.TILE_W, 16);
+  const cx = 12, cy = 8;
+  for (let r = 0; r <= 3; r++) for (let k = -(3 - r); k <= 3 - r; k++) { b.set(cx + k, cy - r, C.ink); b.set(cx + k, cy + r, C.ink); }
+  for (let r = 0; r <= 2; r++) for (let k = -(2 - r); k <= 2 - r; k++) { b.set(cx + k, cy - r, C.goldHi); b.set(cx + k, cy + r, C.goldHi); }
+  return b;
+}
+
+/** A gold swallowtail flag on a staff that continues the mast; the tail flutters. */
+function pennant(frame: number): PixelBuffer {
+  const b = new PixelBuffer(9, 8);
+  b.vline(0, 0, 8, C.ink);
+  b.rect(1, 1, 6, 4, C.goldHi);
+  b.hline(1, 0, 6 + frame, C.ink);
+  b.hline(1, 5, 6 + frame, C.ink);
+  b.vline(7 + frame, 1, 4, C.ink);
+  if (frame) b.rect(7, 1, 1, 4, C.goldHi);
+  // swallowtail notch
+  b.set(6 + frame, 2, C.ink); b.set(6 + frame, 3, C.ink);
+  b.set(7 + frame, 2, 255); b.set(7 + frame, 3, 255);
+  return b;
+}
+
+/** The ship sprite's mast top (topmost opaque pixel), for placing the pennant. */
+function mastTop(): { x: number; y: number } {
+  const b = shipSprite();
+  for (let y = 0; y < b.h; y++) for (let x = 0; x < b.w; x++) if (b.get(x, y) !== 255) return { x, y };
+  return { x: Math.floor(b.w / 2), y: 0 };
 }

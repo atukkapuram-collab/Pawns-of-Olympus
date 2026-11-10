@@ -106,7 +106,7 @@ describe('pixel primitives', () => {
 describe('bitmap font', () => {
   it('has a glyph for every character used in player-facing strings', () => {
     const missing = new Set<string>();
-    for (const s of Object.values(STRINGS)) for (const ch of s) if (!hasGlyph(ch)) missing.add(ch);
+    for (const s of Object.values(STRINGS)) for (const ch of s.replace(/\{\w+\}/g, '')) if (!hasGlyph(ch)) missing.add(ch);
     expect([...missing]).toEqual([]);
   });
 

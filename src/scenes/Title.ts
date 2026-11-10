@@ -71,7 +71,7 @@ export class TitleScene extends Phaser.Scene {
       return b;
     })).setOrigin(0, 0);
     this.add.image(Math.round(160 - logo.w / 2), 11, ensureTexture(this, 'title|logo', () => logo)).setOrigin(0, 0);
-    const tag = addText(this, 0, 125, t('game.tagline'), C.ink);
+    const tag = addText(this, 0, 126, t('game.tagline'), C.ink);
     tag.x = Math.round(160 - tag.width / 2);
 
     this.add.image(0, 57, ensureTexture(this, 'title|wallband', () => {
@@ -123,11 +123,15 @@ export class TitleScene extends Phaser.Scene {
       this.start(LEVELS[0]!.id);
     }, hasProgress ? 'N' : 'E']);
     items.push([t('ui.settings'), () => this.scene.start('Settings', { back: 'Title' }), 'S']);
-    items.push([t('ui.credits'), () => this.scene.start('Credits', {}), 'C']);
-    const tw = 104, th = items.length * 15 + 10;
-    const tx = Math.round(160 - tw / 2), ty = 60 + Math.round((72 - th) / 2);
+    // last row: Codex and Credits side by side
+    const rows = items.length + 1;
+    const tw = 104, th = rows * 14 + 6;
+    const tx = Math.round(160 - tw / 2), ty = Math.max(61, 60 + Math.round((64 - th) / 2));
     this.add.image(tx, ty, ensureTexture(this, `title|tablet|${th}`, () => panel(tw, th, 'clay'))).setOrigin(0, 0);
-    const buttons: PixelButton[] = items.map(([label, fn, key], i) => addButton(this, tx + 6, ty + 5 + i * 15, tw - 12, 13, label, fn, key));
+    const buttons: PixelButton[] = items.map(([label, fn, key], i) => addButton(this, tx + 6, ty + 4 + i * 14, tw - 12, 13, label, fn, key));
+    const half = Math.floor((tw - 14) / 2);
+    buttons.push(addButton(this, tx + 6, ty + 4 + items.length * 14, half, 13, t('ui.codex'), () => this.scene.start('Codex', {})));
+    buttons.push(addButton(this, tx + 8 + half, ty + 4 + items.length * 14, tw - 14 - half, 13, t('ui.credits'), () => this.scene.start('Credits', {})));
 
     music.play('title');
     this.input.keyboard?.on('keydown', (e: KeyboardEvent) => {
@@ -135,7 +139,8 @@ export class TitleScene extends Phaser.Scene {
       music.play('title');
       if (e.code === 'Enter' || e.code === 'KeyE' || e.code === 'Space') buttons[0]!.press();
       if (e.code === 'KeyN' && hasProgress) buttons[1]!.press();
-      if (e.code === 'KeyS') buttons[buttons.length - 2]!.press();
+      if (e.code === 'KeyS') buttons[buttons.length - 3]!.press();
+      if (e.code === 'KeyX') buttons[buttons.length - 2]!.press();
       if (e.code === 'KeyC') buttons[buttons.length - 1]!.press();
     });
     this.input.on('pointerdown', () => { sfx.unlock(); music.play('title'); });

@@ -1,29 +1,43 @@
 import { expect, test } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import type { LevelData } from '../src/core/level';
-import { collectErrors, playSolution, pressButton, pressTile, settle, throughFlow, waitScene } from './helpers';
+import { collectErrors, playSolution, playTutorial, pressButton, pressTile, settle, throughFlow, waitScene } from './helpers';
 
 const lvl = (id: string) => JSON.parse(readFileSync(`src/data/levels/${id}.json`, 'utf8')) as LevelData;
-const a101 = lvl('a1-01');
 const a102 = lvl('a1-02');
 
-test('title -> Level 1 -> win through the UI -> victory screen', async ({ page }, info) => {
+test('title -> intro cards -> briefing -> Level 1 tutorial, step by step -> victory screen', async ({ page }, info) => {
   const touch = info.project.name === 'touch';
   const errors = await collectErrors(page);
   await page.goto('./');
   await waitScene(page, 'Title');
   await pressButton(page, 'New campaign', touch);
-  await throughFlow(page, touch);
+  // act intro and pre-level scene
+  for (let i = 0; i < 2; i++) { await waitScene(page, 'Cutscene'); await pressButton(page, 'Skip', touch); }
+  // intro cards for what is new in Level 1, walked with Next
+  await waitScene(page, 'Cards');
+  const ids = await page.evaluate(() => (window.__POO__!.game.scene.getScene('Cards') as unknown as { d: { ids: string[] } }).d.ids);
+  expect(ids).toEqual(['achilles', 'spearman', 'water']);
+  await pressButton(page, 'Next', touch);
+  await pressButton(page, 'Next', touch);
+  await pressButton(page, 'Continue', touch);
+  await waitScene(page, 'Briefing');
+  await pressButton(page, 'Play', touch);
+  await waitScene(page, 'Battle');
   await settle(page);
-  await playSolution(page, a101, touch);
+  const steps = await playTutorial(page, touch);
+  expect(steps).toEqual(['select', 'move', 'strike', 'read', 'endTurn', 'dodge', 'undo', 'finish', 'done']);
   await waitScene(page, 'Result');
   const phase = await page.evaluate(() => window.__POO__!.battle()!.state.phase);
   expect(phase).toBe('won');
   // stars get awarded, then Next leads to Level 2
   await page.waitForTimeout(1000);
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('pawns-of-olympus/save')!).tutorialDone)).toBe(true);
   await pressButton(page, 'Next', touch);
   await throughFlow(page, touch);
   await page.waitForFunction(() => window.__POO__?.battle()?.level.id === 'a1-02');
+  // seen cards are not shown again, and the tutorial does not run outside Level 1
+  expect(await page.evaluate(() => window.__POO__!.battle()!.tut)).toBeNull();
   expect(errors).toEqual([]);
 });
 

@@ -18,3 +18,10 @@ Still open: chariot driver scale and horse silhouette; cutscene art doesn't depi
 
 ## QA round 2 (whole game, 15 levels through the UI)
 Campaign plays end to end with real clicks (both act boundaries, ending, Continue). 11 new bugs (BUG-13..23, 2 major): all fixed. Notable: allies are no longer accidentally pushed/swapped (explicit "Aim at ally" / ability choice), level select blurbs fit, pause/restart queue during animations, rotate overlay stays on top, New campaign asks before erasing progress, act intro paintings match their lines. `npm run check` green afterwards.
+
+## Teaching layer review (2026-11-09)
+New: Level 1 guided tutorial, intro cards + Codex, briefing before every level, objective in the HUD, goal markers, hints.
+- lore-keeper: 29 text fixes applied. Biggest: the tutorial asked Achilles to dodge a spear he is immune to; the dodge line now says so ("Spears can't hurt Achilles, but others must dodge"). Iliad 10 is a night raid on the Trojan camp, not Troy; card lines over length shortened; rule lines made exact (arrows hit ships, chariots only hurt what they run into, allies pushed without damage, swords removed).
+- style-reviewer (verdict: needs work, 8 major): fixed wrapping hero line on the briefing (and the row step now follows the text height), hint button clipped under the HUD (sized to its label), goal marker that looked like a move tile (now gold diamond under units + gold corner brackets above them), diagram arrows that read as split tiles (now dotted red for Trojan attacks / blue for hero moves with solid heads inside the target cell; threatened cells hatched), tutorial holes that cut sprites (one hole and one frame around the whole subject), stealth card art that read as a monitor (now a crenellated gate), brush card (fire eating into brush), ship pennant (swallowtail on the mast top), Trojan roster overlaps (fixed slots, counts on ink chips), Codex "?" invisible and headings misaligned.
+- Not done (minor): per-hero token colors in diagrams and mini map (all heroes are blue discs), Codex as a chip grid instead of bars, card name on its own ink strip.
+

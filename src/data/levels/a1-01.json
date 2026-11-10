@@ -28,7 +28,7 @@
     "patron": null,
     "turns": [
       [["move", "achilles", 4, 3], ["act", "achilles", "strike", 4, 2], ["endTurn"]],
-      [["act", "achilles", "strike", 5, 3]]
+      [["move", "achilles", 5, 2], ["act", "achilles", "strike", 5, 3]]
     ]
   }
 }

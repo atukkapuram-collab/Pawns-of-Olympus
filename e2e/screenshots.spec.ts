@@ -27,7 +27,7 @@ test('gallery', async ({ page }) => {
 });
 
 test('game screens', async ({ page }) => {
-  test.setTimeout(480_000);
+  test.setTimeout(900_000);
   // 640x360 viewport -> exactly 2x scale for the 2x captures
   await page.setViewportSize({ width: 640, height: 360 });
   await page.goto('./');
@@ -44,7 +44,15 @@ test('game screens', async ({ page }) => {
     await shoot(page, name);
   };
   await go('LevelSelect', { act: 1 }, 'levelselect-act1');
-  await go('Patron', { levelId: 'a1-03' }, 'patron');
+  await go('Briefing', { levelId: 'a1-01' }, 'briefing-a1-01');
+  await go('Briefing', { levelId: 'a1-04' }, 'briefing-a1-04');
+  await go('Briefing', { levelId: 'a2-05' }, 'briefing-a2-05');
+  await go('Briefing', { levelId: 'a3-05' }, 'briefing-a3-05');
+  for (const id of ['achilles', 'archer', 'odysseus', 'hector', 'zeus', 'apollo', 'brush', 'protect', 'stealth']) {
+    await go('Cards', { ids: [id], mode: 'intro', then: { scene: 'Title' } }, `card-${id}`);
+  }
+  await page.evaluate(() => localStorage.setItem('pawns-of-olympus/save', JSON.stringify({ version: 1, levels: {}, lastLevel: null, seenScenes: ['card:achilles', 'card:spearman', 'card:water', 'card:ajax', 'card:archer', 'card:zeus', 'card:rock'], attempts: {}, hints: {}, tutorialDone: false })));
+  await go('Codex', {}, 'codex');
   await go('Cutscene', { kind: 'act', act: 1, then: { scene: 'Title' } }, 'cutscene-act1');
   await go('Cutscene', { kind: 'pre', act: 1, levelId: 'a1-05', then: { scene: 'Title' } }, 'cutscene-pre');
   await go('Settings', { back: 'Title' }, 'settings');
@@ -57,6 +65,24 @@ test('game screens', async ({ page }) => {
     await page.waitForTimeout(200);
     await shoot(page, `battle-${id}`);
   }
+  // Level 1 tutorial: the first steps
+  await go('Battle', { levelId: 'a1-01', patron: null, tutorial: true }, 'tutorial-1-select');
+  await page.evaluate(async () => { const b = window.__POO__!.battle()!; b.tapTile(1, 3); await b.settle(); });
+  await page.waitForTimeout(200);
+  await shoot(page, 'tutorial-2-move');
+  await page.evaluate(async () => { const b = window.__POO__!.battle()!; b.tapTile(4, 3); await b.settle(); b.tapTile(4, 2); await b.settle(); });
+  await page.waitForTimeout(400);
+  await shoot(page, 'tutorial-4-read');
+  // hint panel (after two restarts) on Level 8
+  await page.evaluate(() => localStorage.setItem('pawns-of-olympus/save', JSON.stringify({ version: 1, levels: {}, lastLevel: null, seenScenes: [], attempts: { 'a2-03': 2 }, hints: {}, tutorialDone: true })));
+  await page.evaluate(() => window.__POO__!.startLevel('a2-03'));
+  await waitScene(page, 'Battle');
+  await page.waitForTimeout(300);
+  await shoot(page, 'battle-a2-03-hint-button');
+  await page.evaluate(() => (window.__POO__!.battle() as unknown as { openHint(): void }).openHint());
+  await page.waitForTimeout(200);
+  await shoot(page, 'battle-a2-03-hint-1');
+
   // a hovered move tile + an enemy card
   await page.evaluate(() => window.__POO__!.startLevel('a1-02'));
   await waitScene(page, 'Battle');

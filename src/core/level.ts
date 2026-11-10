@@ -39,7 +39,7 @@ export interface LevelData {
   solution: { patron: PatronId | null; turns: SolutionStep[][] };
 }
 
-const STANDARD_LEGEND: Record<string, LegendValue> = {
+export const STANDARD_LEGEND: Record<string, LegendValue> = {
   '.': 'ground', ',': 'sand', '#': 'rock', '~': 'water', 'S': 'ship', '^': 'fire', '%': 'brush', 'G': 'gate', '*': 'light',
 };
 const TILE_KINDS = new Set<LegendValue>(['ground', 'sand', 'rock', 'water', 'brush', 'gate', 'light', 'ship', 'fire']);

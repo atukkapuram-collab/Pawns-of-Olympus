@@ -24,10 +24,23 @@ import { wait } from '../view/ui';
 import { sfx } from '../audio/sfx';
 import { music } from '../audio/music';
 import { fxSettings } from '../view/fx';
+import { Coach, type Rect } from '../view/Coach';
+import { measureLine } from '../art/font';
+import { Tutorial, type TutInput } from '../game/tutorial';
+import { firstTurnSteps, hintAvailable, hintsUnlocked, hintText, recordAttempt, unlockNextHint } from '../game/hints';
+import { goalTiles, objectiveShort, turnGoal } from '../data/teach';
+import { trojans } from '../core/board';
+import { t } from '../data/strings';
+import { updateSave } from '../game/save';
+import { addButton, type PixelButton } from '../view/ui';
 
 export interface BattleData {
   levelId: string;
   patron?: PatronId | null;
+  /** Level 1's guided tutorial. */
+  tutorial?: boolean;
+  /** Hint 3: replay the first turn of the recorded solution. */
+  demo?: boolean;
 }
 
 type Mode = 'idle' | 'favor';
@@ -53,6 +66,14 @@ export class BattleScene extends Phaser.Scene {
   private settleWaiters: Array<() => void> = [];
   private godShown = new Set<string>();
   private banterCount: Record<string, number> = {};
+  /** Level 1 tutorial (null when not running). */
+  tut: Tutorial | null = null;
+  coach!: Coach;
+  /** Hint 3 is playing the first turn: the player watches. */
+  demoActive = false;
+  private hintBtn: PixelButton | null = null;
+  private clearShown = false;
+  private wantDemo = false;
 
   /** Next banter line for a god (cycles through god.<name>.1..3). */
   banter(god: string): string {
@@ -79,6 +100,11 @@ export class BattleScene extends Phaser.Scene {
     this.cursor = null;
     this.preview = null;
     this.waveOrigin = null;
+    this.tut = data.tutorial ? new Tutorial() : null;
+    this.wantDemo = !!data.demo;
+    this.demoActive = false;
+    this.clearShown = false;
+    this.hintBtn = null;
   }
 
   create(): void {
@@ -86,7 +112,7 @@ export class BattleScene extends Phaser.Scene {
     this.add.image(0, 0, ensureTexture(this, `bg|${this.level.backdrop ?? 'beach'}`, () => drawBackdrop(this.level.backdrop ?? 'beach'))).setOrigin(0, 0).setDepth(-10);
     this.board = new BoardView(this, this.state, night);
     this.board.warm([...new Set(this.state.units.map((u) => u.type))]);
-    this.hud = new Hud(this, this.level.title, this.level.index, this.state, {
+    this.hud = new Hud(this, objectiveShort(this.level), turnGoal(this.level), this.state, {
       endTurn: () => this.endTurn(),
       undo: () => this.undo(),
       restart: () => this.restart(),
@@ -98,12 +124,17 @@ export class BattleScene extends Phaser.Scene {
     this.input.on('pointerdown', (p: Phaser.Input.Pointer) => this.onPointer(p));
     this.input.on('pointermove', (p: Phaser.Input.Pointer) => this.onHover(p));
     this.input.keyboard?.on('keydown', (e: KeyboardEvent) => this.onKey(e));
-    this.events.once('shutdown', () => this.board.destroy());
+    this.coach = new Coach(this);
+    this.events.once('shutdown', () => { this.board.destroy(); this.coach.destroy(); });
 
-    // auto-select the first hero so a new player sees what to do
+    // auto-select the first hero so a new player sees what to do (the tutorial asks instead)
     const first = this.state.units.find((u) => u.team === 'greek' && onBoard(u));
-    if (first) this.select(first.id);
+    if (first && !this.tut) this.select(first.id);
     this.refresh();
+    this.board.setGoals(goalTiles(this.level), this.state); // after refresh: sprites are placed
+    if (this.tut) this.showTutorial();
+    else if (hintAvailable(this.level.id, false)) this.addHintButton();
+    if (this.wantDemo) this.time.delayedCall(250, () => void this.startDemo());
     this.game.events.emit('poo:ready', 'Battle');
   }
 
@@ -116,6 +147,13 @@ export class BattleScene extends Phaser.Scene {
     if (u && onBoard(u) && s.phase === 'player' && this.mode === 'idle') {
       ui.moveTiles = [...moveOptions(s, u).values()].map((p) => p[p.length - 1]!);
       ui.targetTiles = canAct(s, u) ? abilityTargets(s, u, this.ability).filter((t) => this.aimAllies || unitAt(s, t.x, t.y)?.team !== 'greek') : [];
+      if (this.tut?.active) {
+        // the tutorial shows only the moves and targets its step allows
+        const ctx = { state: s, selected: this.selected, info: this.info };
+        const tut = this.tut;
+        ui.moveTiles = ui.moveTiles.filter((t) => tut.allows({ kind: 'move', unit: u.id, ...t }, ctx));
+        ui.targetTiles = ui.targetTiles.filter((t) => tut.allows({ kind: 'act', unit: u.id, ...t }, ctx));
+      }
     }
     if (this.mode === 'favor' && s.patron === 'poseidon' && this.waveOrigin) ui.wave = { ...this.waveOrigin, dir: this.favorDir };
     if (this.mode === 'favor' && s.patron === 'athena') ui.targetTiles = s.units.filter((v) => v.team === 'greek' && onBoard(v) && v.acted).map((v) => ({ x: v.x, y: v.y }));
@@ -160,7 +198,7 @@ export class BattleScene extends Phaser.Scene {
     this.cursor = t;
     const u = t ? unitAt(this.state, t.x, t.y) : undefined;
     this.info = u ? u.id : null;
-    if (!this.busy) this.refresh();
+    if (!this.busy) { this.refresh(); this.tutorialCheck(); }
   }
 
   private get covered(): boolean {
@@ -182,7 +220,7 @@ export class BattleScene extends Phaser.Scene {
    */
   tapTile(x: number, y: number, needsConfirm = false): void {
     const s = this.state;
-    if (s.phase !== 'player' || this.busy) return;
+    if (s.phase !== 'player' || this.busy || this.demoActive) return;
     const confirmed = !needsConfirm || (this.preview?.x === x && this.preview?.y === y);
     const here = unitAt(s, x, y);
 
@@ -214,6 +252,7 @@ export class BattleScene extends Phaser.Scene {
 
     const allyTarget = !!here && here.team === 'greek' && isTarget && this.aimAllies;
     if (sel && isTarget && (!allyTarget || (this.preview?.x === x && this.preview?.y === y))) {
+      if (!this.permit({ kind: 'act', unit: sel.id, x, y })) return;
       if (!confirmed) { this.preview = { x, y }; this.info = here?.id ?? null; sfx.play('select'); this.refresh(); return; }
       this.preview = null;
       this.dispatch({ type: 'act', unit: sel.id, ability: this.ability, x, y });
@@ -228,13 +267,16 @@ export class BattleScene extends Phaser.Scene {
       return;
     }
     if (here && here.team === 'greek') {
+      if (!this.permit({ kind: 'select', unit: here.id })) return;
       if (this.selected !== here.id) sfx.play('select');
       this.select(here.id);
       this.info = here.id;
       this.refresh();
+      this.tutorialCheck();
       return;
     }
     if (sel && isMove) {
+      if (!this.permit({ kind: 'move', unit: sel.id, x, y })) return;
       if (!confirmed) { this.preview = { x, y }; sfx.play('tick'); this.refresh(); return; }
       this.preview = null;
       this.dispatch({ type: 'move', unit: sel.id, x, y });
@@ -246,6 +288,7 @@ export class BattleScene extends Phaser.Scene {
       this.preview = null;
       sfx.play('tick');
       this.refresh();
+      this.tutorialCheck();
       return;
     }
     // empty tile: deselect
@@ -261,6 +304,11 @@ export class BattleScene extends Phaser.Scene {
     if (e.repeat && !e.code.startsWith('Arrow')) return;
     const s = this.state;
     const k = e.code;
+    if (this.demoActive || (this.coach.visible && !this.tut?.active)) {
+      if (k === 'Enter' || k === 'Space' || k === 'KeyE') { this.coach.pressKey('E'); return; }
+      if (k === 'Escape') { this.coach.pressKey('Esc'); return; }
+      if (this.demoActive) return;
+    }
     if (k === 'KeyE') return this.hud.endTurn.press();
     if (k === 'KeyZ') return this.hud.undo.press();
     if (k === 'KeyR') {
@@ -284,11 +332,13 @@ export class BattleScene extends Phaser.Scene {
       if (!hs.length) return;
       const i = hs.findIndex((h) => h.id === this.selected);
       const next = hs[(i + 1) % hs.length]!;
+      if (!this.permit({ kind: 'select', unit: next.id })) return;
       this.select(next.id);
       this.cursor = { x: next.x, y: next.y };
       this.info = next.id;
       sfx.play('select');
       this.refresh();
+      this.tutorialCheck();
       return;
     }
     if (k === 'Digit1' || k === 'Digit2') {
@@ -310,6 +360,7 @@ export class BattleScene extends Phaser.Scene {
       this.info = u?.id ?? null;
       sfx.play('tick');
       this.refresh();
+      this.tutorialCheck();
       return;
     }
     if ((k === 'Enter' || k === 'Space' || k === 'NumpadEnter') && this.cursor) {
@@ -341,7 +392,8 @@ export class BattleScene extends Phaser.Scene {
   }
 
   toggleFavor(): void {
-    if (this.busy || !this.state.patron || this.state.favorUsed) return;
+    if (this.busy || !this.state.patron || this.state.favorUsed || this.demoActive) return;
+    if (!this.permit({ kind: 'favor' })) return;
     this.mode = this.mode === 'favor' ? 'idle' : 'favor';
     this.waveOrigin = null;
     this.preview = null;
@@ -350,27 +402,32 @@ export class BattleScene extends Phaser.Scene {
   }
 
   endTurn(): void {
-    if (this.busy || this.covered || this.state.phase !== 'player') return;
+    if (this.busy || this.covered || this.state.phase !== 'player' || this.demoActive) return;
+    if (!this.permit({ kind: 'endTurn' })) return;
     this.mode = 'idle';
     this.preview = null;
     this.dispatch({ type: 'endTurn' });
   }
 
   undo(): void {
-    if (this.busy || this.covered) return;
+    if (this.busy || this.covered || this.demoActive) return;
+    if (!this.permit({ kind: 'undo' })) return;
     if (this.session.undo()) {
       sfx.play('undo');
       this.mode = 'idle';
       this.preview = null;
       this.refresh();
+      this.tutorialCheck({ kind: 'undo' });
     }
   }
 
   restart(): void {
-    if (this.busy || this.covered) return;
+    if (this.busy || this.covered || this.demoActive) return;
+    if (!this.permit({ kind: 'restart' })) return;
+    if (!this.tut) recordAttempt(this.level.id);
     sfx.play('select');
     this.scene.stop('Result');
-    this.scene.restart({ levelId: this.level.id, patron: this.session.patron });
+    this.scene.restart({ levelId: this.level.id, patron: this.session.patron, tutorial: !!this.tut?.active });
   }
 
   /** Called from the defeat screen. */
@@ -388,7 +445,166 @@ export class BattleScene extends Phaser.Scene {
       return;
     }
     if (a.type === 'favor') this.mode = 'idle';
+    if (this.tut?.active) this.coach.clear();
     void this.play(r.events);
+  }
+
+  // ------------------------------------------------------------------ tutorial
+
+  /** While the tutorial runs, only the step's own action is allowed. */
+  private permit(input: TutInput): boolean {
+    if (!this.tut?.active) return true;
+    if (this.tut.allows(input, { state: this.state, selected: this.selected, info: this.info })) return true;
+    sfx.play('invalid');
+    return false;
+  }
+
+  private tutorialCheck(last?: TutInput): void {
+    if (!this.tut?.active) return;
+    const before = this.tut.step;
+    this.tut.after({ state: this.state, selected: this.selected, info: this.info, last });
+    if (!this.tut.active) return this.finishTutorial(true);
+    if (this.tut.step !== before) sfx.play('tick');
+    if (!this.busy) this.showTutorial();
+  }
+
+  private finishTutorial(completed: boolean): void {
+    updateSave((d) => { d.tutorialDone = true; });
+    this.coach.clear();
+    this.skipBtn?.destroy();
+    this.skipBtn = null;
+    if (!completed) {
+      this.tut?.skip();
+      if (!this.selected) this.select(this.heroes()[0]?.id ?? null);
+      this.refresh();
+    }
+  }
+
+  private skipBtn: PixelButton | null = null;
+
+  /** Screen rect of a unit's sprite. */
+  private unitRect(id: string): Rect | null {
+    const v = this.board.units.get(id);
+    if (!v || !v.sprite.visible) return null;
+    return { x: Math.round(v.sprite.x) - 1, y: Math.round(v.sprite.y) - 1, w: v.sprite.width + 2, h: v.sprite.height + 2 };
+  }
+
+  private tileRect(x: number, y: number): Rect {
+    const o = tileOrigin(this.board.layout, x, y);
+    return { x: o.px, y: o.py, w: 24, h: 17 };
+  }
+
+  private showTutorial(): void {
+    const tut = this.tut;
+    if (!tut?.active) return;
+    const step = tut.step;
+    const tg = tut.target(this.state);
+    const frames: Rect[] = [];
+    let holes: Rect[];
+    if (tg.kind === 'unit') { const r = this.unitRect(tg.id); if (r) frames.push(r); }
+    else if (tg.kind === 'tile') frames.push(this.tileRect(tg.x, tg.y));
+    else if (tg.kind === 'units') {
+      for (const id of tg.ids) { const r = this.unitRect(id); if (r) frames.push(r); }
+      for (const tl of tg.tiles) frames.push(this.tileRect(tl.x, tl.y));
+    } else if (tg.kind === 'button') {
+      const b = tg.label === 'End turn' ? this.hud.endTurn : this.hud.undo;
+      frames.push({ x: b.img.x, y: b.img.y, w: b.img.width, h: b.img.height });
+    }
+    // the hole: around what to click; moves keep the whole board lit
+    if (step === 'move' || step === 'dodge' || step === 'finish' || step === 'strike') {
+      const L = this.board.layout;
+      holes = [{ x: L.ox - 2, y: L.oy - 22, w: L.cols * 24 + 4, h: L.rows * 16 + 26 }];
+    } else {
+      const u = unionRect(frames);
+      holes = u ? [{ x: u.x - 3, y: u.y - 3, w: u.w + 6, h: u.h + 6 }] : [];
+    }
+    // one frame around the whole subject (unit + its tiles), never a double line
+    if (frames.length > 1) { const u = unionRect(frames); frames.length = 0; if (u) frames.push(u); }
+    if (step === 'read') {
+      // keep the HUD order list readable too
+      holes.push({ x: 216, y: 70, w: 102, h: 24 });
+    }
+    this.coach.show({ text: t(`tut.${step}.text`), keys: t(`tut.${step}.keys`), holes, frames });
+    if (!this.skipBtn) {
+      this.skipBtn = addButton(this, 4, 164, 76, 13, t('ui.skipTutorial'), () => { sfx.play('ui'); this.finishTutorial(false); });
+      this.skipBtn.img.setDepth(DEPTH.hud + 50);
+    }
+  }
+
+  // ------------------------------------------------------------------ hints
+
+  private addHintButton(): void {
+    if (this.hintBtn) return;
+    const w = measureLine(t('hint.ask')) + measureLine('H') + 18;
+    this.hintBtn = addButton(this, 210 - w, 21, w, 13, t('hint.ask'), () => this.openHint(), 'H');
+    this.hintBtn.img.setDepth(DEPTH.hud + 2);
+    this.input.keyboard?.on('keydown-H', () => { if (!this.busy && !this.demoActive && !this.covered) this.hintBtn?.press(); });
+  }
+
+  private openHint(): void {
+    if (this.busy || this.demoActive) return;
+    sfx.play('ui');
+    let n = hintsUnlocked(this.level.id);
+    if (n === 0) n = unlockNextHint(this.level.id);
+    this.showHint(n);
+  }
+
+  private showHint(n: number): void {
+    const shown = Math.min(2, Math.max(1, n)) as 1 | 2;
+    const buttons: Array<{ label: string; key?: string; fn: () => void }> = [];
+    if (n < 2) buttons.push({ label: t('hint.more'), key: 'E', fn: () => { sfx.play('tick'); this.showHint(unlockNextHint(this.level.id)); } });
+    else buttons.push({ label: t('hint.show'), key: 'E', fn: () => this.requestDemo() });
+    buttons.push({ label: t('ui.close'), key: 'Esc', fn: () => { sfx.play('ui'); this.coach.clear(); } });
+    this.coach.show({ text: `${t('hint.title', { n: shown })}. ${hintText(this.level.id, shown)}`, holes: [], frames: [], buttons, width: 208 });
+  }
+
+  /** Hint 3: restart with the solution's patron and play turn 1 step by step. */
+  private requestDemo(): void {
+    if (hintsUnlocked(this.level.id) < 3) unlockNextHint(this.level.id);
+    sfx.play('select');
+    this.coach.clear();
+    this.scene.restart({ levelId: this.level.id, patron: this.level.solution.patron, demo: true });
+  }
+
+  private async startDemo(): Promise<void> {
+    const steps = firstTurnSteps(this.level);
+    this.demoActive = true;
+    for (let i = 0; i < steps.length; i++) {
+      const st = steps[i]!;
+      if (st.hero) { this.select(st.hero); this.refresh(); }
+      const frames: Rect[] = [];
+      if (st.focus) frames.push(this.tileRect(st.focus.x, st.focus.y));
+      if (st.hero) { const r = this.unitRect(st.hero); if (r) frames.push(r); }
+      if (st.action.type === 'endTurn') frames.push({ x: this.hud.endTurn.img.x, y: this.hud.endTurn.img.y, w: this.hud.endTurn.img.width, h: this.hud.endTurn.img.height });
+      await new Promise<void>((res) => {
+        this.coach.show({
+          text: t('hint.step', { i: i + 1, n: steps.length, what: st.text }),
+          holes: [], frames,
+          buttons: [{ label: t('hint.go'), key: 'E', fn: () => res() }],
+          avoid: frames[0],
+        });
+      });
+      this.coach.clear();
+      if (!this.scene.isActive()) return;
+      this.dispatch(st.action);
+      await this.settle();
+      if (this.state.phase !== 'player') break;
+    }
+    this.demoActive = false;
+    if (this.state.phase === 'player') {
+      this.coach.show({ text: t('hint.yours'), holes: [], frames: [], buttons: [{ label: t('ui.close'), key: 'E', fn: () => { sfx.play('ui'); this.coach.clear(); } }] });
+    }
+    this.refresh();
+  }
+
+  /** Every Trojan is down but the goal is something else: say what is left. */
+  private showClear(): void {
+    this.clearShown = true;
+    const o = this.state.objective;
+    const key = o.type === 'escort' ? 'clear.escort' : o.type === 'stealth' ? 'clear.stealth' : o.type === 'protect' ? 'clear.protect' : 'clear.survive';
+    const vars = { hero: o.type === 'escort' ? (this.state.units.find((u) => u.type === o.unit) ? cap(o.unit) : '') : '', n: o.type === 'protect' || o.type === 'survive' ? o.turns : 0 };
+    const frames = goalTiles(this.level).map((g) => this.tileRect(g.x, g.y));
+    this.coach.show({ text: t(key, vars), holes: [], frames, buttons: [{ label: t('ui.close'), key: 'E', fn: () => { sfx.play('ui'); this.coach.clear(); } }], avoid: frames[0] });
   }
 
   // ------------------------------------------------------------------ animation
@@ -618,6 +834,9 @@ export class BattleScene extends Phaser.Scene {
     }
     this.refresh();
     const s = this.state;
+    if (!this.demoActive) this.tutorialCheck();
+    if (s.phase === 'lost' && !this.tut) recordAttempt(this.level.id);
+    if (s.phase === 'player' && !this.tut && !this.demoActive && !this.clearShown && s.objective.type !== 'rout' && trojans(s).length === 0) this.showClear();
     if (s.phase === 'won' || s.phase === 'lost') {
       this.time.delayedCall(350, () => {
         if (this.state.phase !== s.phase) return;
@@ -632,3 +851,14 @@ export class BattleScene extends Phaser.Scene {
 }
 
 export { DEPTH };
+
+function cap(s: string): string {
+  return s[0]!.toUpperCase() + s.slice(1);
+}
+
+function unionRect(rs: Rect[]): Rect | null {
+  if (!rs.length) return null;
+  const x0 = Math.min(...rs.map((r) => r.x)), y0 = Math.min(...rs.map((r) => r.y));
+  const x1 = Math.max(...rs.map((r) => r.x + r.w)), y1 = Math.max(...rs.map((r) => r.y + r.h));
+  return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
+}

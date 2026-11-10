@@ -11,6 +11,12 @@ export interface SaveData {
   levels: Record<string, { won: boolean; stars: [boolean, boolean, boolean] }>;
   lastLevel: string | null;
   seenScenes: string[];
+  /** Restarts + defeats per level (unlocks the hint button). */
+  attempts: Record<string, number>;
+  /** Highest hint unlocked per level (0 = none). */
+  hints: Record<string, number>;
+  /** Level 1's guided tutorial finished or skipped. */
+  tutorialDone: boolean;
 }
 
 export interface Settings {
@@ -25,7 +31,7 @@ export interface Settings {
 export const DEFAULT_SETTINGS: Settings = { music: 0.35, sound: 0.6, muted: false, shake: true, reducedMotion: false, highContrast: false };
 
 export function freshSave(): SaveData {
-  return { version: SAVE_VERSION, levels: {}, lastLevel: null, seenScenes: [] };
+  return { version: SAVE_VERSION, levels: {}, lastLevel: null, seenScenes: [], attempts: {}, hints: {}, tutorialDone: false };
 }
 
 function storage(): Storage | null {
@@ -41,7 +47,7 @@ export function migrate(raw: unknown): SaveData {
   if (!raw || typeof raw !== 'object') return freshSave();
   const r = raw as Partial<SaveData>;
   if (r.version === SAVE_VERSION) {
-    return { ...freshSave(), ...r, levels: r.levels ?? {}, seenScenes: r.seenScenes ?? [] };
+    return { ...freshSave(), ...r, levels: r.levels ?? {}, seenScenes: r.seenScenes ?? [], attempts: r.attempts ?? {}, hints: r.hints ?? {}, tutorialDone: r.tutorialDone ?? false };
   }
   return freshSave();
 }
@@ -88,4 +94,12 @@ export function writeSettings(s: Settings): void {
   } catch {
     /* ignore */
   }
+}
+
+/** Read-modify-write helper. */
+export function updateSave(fn: (d: SaveData) => void): SaveData {
+  const d = loadSave();
+  fn(d);
+  writeSave(d);
+  return d;
 }

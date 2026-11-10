@@ -4,7 +4,7 @@
  */
 import { SWAP_RANGE, UNITS } from '../data/units';
 import { cloneState, heroes, idx, inBounds, lineDir, onBoard, reachable, ships, step, tileAt, trojans, unitAt, unitById } from './board';
-import { hurt, push, resolveIntent, sheltered } from './combat';
+import { hurt, push, resolveIntent, sheltered, traceAttack } from './combat';
 import { repositionAll } from './ai';
 import { DIRS, DV, type Ability, type Action, type ApplyResult, type Dir, type GameEvent, type GameState, type Unit } from './types';
 
@@ -57,6 +57,13 @@ export function abilityTargets(s: GameState, u: Unit, ability: Ability): Array<{
 /** Trojans with a pending intent, in the order they will act (badge numbers 1, 2, 3…). */
 export function intentOrder(s: GameState): Unit[] {
   return s.units.filter((u) => u.team === 'trojan' && onBoard(u) && u.intent !== null);
+}
+
+/** Every tile a pending Trojan intent will hit (the red tiles), in act order. */
+export function threatTiles(s: GameState): Array<{ x: number; y: number }> {
+  const out: Array<{ x: number; y: number }> = [];
+  for (const e of intentOrder(s)) for (const h of traceAttack(s, e, e.intent!, e).hits) out.push({ x: h.x, y: h.y });
+  return out;
 }
 
 export function favorAvailable(s: GameState): boolean {

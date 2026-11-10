@@ -1,5 +1,5 @@
 /**
- * Battle HUD: an ink title strip top-left (level name), and a clay column on
+ * Battle HUD: an ink strip top-left with the objective, and a clay column on
  * the right: turn/par, a cream info card (selected or hovered unit), the
  * numbered Trojan action order, then the patron favor, End turn, Undo, Restart.
  */
@@ -41,15 +41,17 @@ export class Hud {
 
   constructor(
     readonly scene: Phaser.Scene,
-    title: string,
-    index: number,
+    objective: string,
+    private readonly turnOf: number,
     s: GameState,
     readonly h: HudHandlers,
   ) {
     const d = DEPTH.hud;
     const stripW = 208;
     scene.add.image(4, 4, ensureTexture(scene, `strip|${stripW}`, () => panel(stripW, 15, 'ink'))).setOrigin(0, 0).setDepth(d);
-    addText(scene, 9, 8, `${index}. ${title}`, C.cream).setDepth(d);
+    // the objective, always on screen
+    const goal = addText(scene, 9, 8, t('hud.goal'), C.sun).setDepth(d);
+    addText(scene, 9 + goal.width + 5, 8, objective, C.cream, { maxWidth: stripW - goal.width - 16 }).setDepth(d);
 
     scene.add.image(HUD_X, 2, ensureTexture(scene, `hudcol|${HUD_W}`, () => {
       const b = panel(HUD_W, 176, 'clay');
@@ -71,7 +73,8 @@ export class Hud {
 
   update(s: GameState, canUndo: boolean, busy: boolean, info: Unit | null, favorArmed: boolean, selected: string | null, ability: Ability, aimAllies = false): void {
     const d = DEPTH.hud + 1;
-    setText(this.turnText, `${t('ui.turn')} ${Math.min(s.turn, 99)}/${s.par}`, s.turn > s.par ? C.red : C.ink);
+    const over = s.turn > this.turnOf;
+    setText(this.turnText, over ? `${t('ui.turn')} ${Math.min(s.turn, 99)}, over par` : `${t('ui.turn')} ${s.turn} of ${this.turnOf}`, over ? C.red : C.ink);
 
     const playing = s.phase === 'player' && !busy;
     this.endTurn.setEnabled(playing);

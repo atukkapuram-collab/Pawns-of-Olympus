@@ -6,14 +6,16 @@ import { TitleScene } from './scenes/Title';
 import { BattleScene } from './scenes/Battle';
 import { ResultScene } from './scenes/Result';
 import { CutsceneScene } from './scenes/Cutscene';
-import { PatronScene } from './scenes/Patron';
+import { BriefingScene } from './scenes/Briefing';
+import { CardsScene } from './scenes/Cards';
+import { CodexScene } from './scenes/Codex';
 import { LevelSelectScene } from './scenes/LevelSelect';
 import { CreditsScene, FlowScene, PauseScene, SettingsScene } from './scenes/Menus';
 import { RotateScene, watchOrientation } from './scenes/Rotate';
 import { tileOrigin } from './view/layout';
 import type { PatronId } from './core/types';
 
-const game = new Phaser.Game(makeConfig([BootScene, TitleScene, LevelSelectScene, PatronScene, CutsceneScene, BattleScene, ResultScene, PauseScene, SettingsScene, CreditsScene, FlowScene, RotateScene]));
+const game = new Phaser.Game(makeConfig([BootScene, TitleScene, LevelSelectScene, BriefingScene, CardsScene, CodexScene, CutsceneScene, BattleScene, ResultScene, PauseScene, SettingsScene, CreditsScene, FlowScene, RotateScene]));
 
 game.events.once(Phaser.Core.Events.READY, () => {
   attachIntegerScaler(game.canvas, () => game.scale.refresh());

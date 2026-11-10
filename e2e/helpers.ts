@@ -67,20 +67,41 @@ export async function playSolution(page: Page, level: LevelData, touch: boolean)
   }
 }
 
-/** Click through cutscenes and pick the first offered patron until a battle starts. */
+/** Click through cutscenes, intro cards and the briefing until a battle starts. */
 export async function throughFlow(page: Page, touch: boolean): Promise<void> {
-  for (let i = 0; i < 30; i++) {
+  for (let i = 0; i < 40; i++) {
     if (await page.evaluate(() => !!window.__POO__!.battle())) return;
     const scene = await page.evaluate(() => window.__POO__!.scene());
-    if (scene === 'Cutscene') {
-      await pressButton(page, 'Skip', touch);
-    } else if (scene === 'Patron') {
-      for (const g of ['Zeus', 'Athena', 'Poseidon']) {
-        const p = await page.evaluate((l) => window.__POO__!.buttonToClient(l), g);
-        if (p) { await pressButton(page, g, touch); break; }
-      }
-    }
+    if (scene === 'Cutscene') await pressButton(page, 'Skip', touch);
+    else if (scene === 'Cards') {
+      const skip = await page.evaluate(() => window.__POO__!.buttonToClient('Skip'));
+      await pressButton(page, skip ? 'Skip' : 'Continue', touch);
+    } else if (scene === 'Briefing') await pressButton(page, 'Play', touch);
     await page.waitForTimeout(150);
   }
   throw new Error('flow did not reach a battle');
+}
+
+/** Level 1's tutorial, played with real clicks or taps. */
+export async function playTutorial(page: Page, touch: boolean): Promise<string[]> {
+  const step = () => page.evaluate(() => window.__POO__!.battle()!.tut?.step ?? 'none');
+  const steps: string[] = [await step()];
+  const note = async () => { const s = await step(); if (steps[steps.length - 1] !== s) steps.push(s); };
+  await pressTile(page, 1, 3, touch); await note(); // select Achilles
+  await pressTile(page, 4, 3, touch, true); await note(); // move to the framed tile
+  await pressTile(page, 4, 2, touch, true); await note(); // strike
+  // read the other spearman: hover with a mouse, tap on touch
+  const p = await page.evaluate(() => window.__POO__!.tileToClient(5, 4));
+  if (touch) await press(page, p, true); else await page.mouse.move(p.x, p.y);
+  await page.waitForTimeout(80);
+  await note();
+  await pressButton(page, 'End turn', touch); await note();
+  await page.waitForFunction(() => window.__POO__!.battle()!.state.turn === 2);
+  await settle(page);
+  await note();
+  await pressTile(page, 4, 4, touch, true); await note(); // dodge
+  await pressButton(page, 'Undo', touch); await note();
+  await pressTile(page, 5, 2, touch, true); await note(); // step off the red again
+  await pressTile(page, 5, 3, touch, true); await note(); // strike
+  return steps;
 }

@@ -7,7 +7,7 @@ import { PixelBuffer, meanderBand } from '../art/pixels';
 import { panel } from '../art/ui';
 import { t } from '../data/strings';
 import { loadSettings, writeSettings, type Settings } from '../game/save';
-import { startLevel } from '../game/flow';
+import { startLevel, startTutorial } from '../game/flow';
 import { ensureTexture } from '../view/textures';
 import { addButton, addText, type PixelButton } from '../view/ui';
 import { fxSettings } from '../view/fx';
@@ -41,13 +41,15 @@ export class SettingsScene extends Phaser.Scene {
   private rows: Array<{ label: string; get: () => string; change: (d: number) => void }> = [];
   private parts: Phaser.GameObjects.GameObject[] = [];
   private back = '';
+  private backData: object | undefined;
 
   constructor() {
     super('Settings');
   }
 
-  create(data: { back?: string; overlay?: boolean }): void {
+  create(data: { back?: string; overlay?: boolean; backData?: object }): void {
     this.back = data.back ?? 'Title';
+    this.backData = data.backData;
     this.st = loadSettings();
     this.row = 0;
     if (data.overlay) this.add.image(0, 0, ensureTexture(this, 'veil2', () => new PixelBuffer(320, 180).ditherFill(0, 0, 320, 180, C.ink, 13))).setOrigin(0, 0);
@@ -65,6 +67,7 @@ export class SettingsScene extends Phaser.Scene {
       { label: 'Threat hatch', ...flag('highContrast') },
     ];
     addButton(this, x + 150, y + 126, 60, 14, t('ui.back'), () => this.close(), 'Esc').img.setDepth(12);
+    addButton(this, x + 10, y + 126, 96, 14, t('ui.replayTutorial'), () => { sfx.play('select'); startTutorial(this); }).img.setDepth(12);
     this.input.keyboard?.on('keydown', (e: KeyboardEvent) => {
       if (e.code === 'ArrowUp' || e.code === 'KeyW') this.row = (this.row + this.rows.length - 1) % this.rows.length;
       else if (e.code === 'ArrowDown' || e.code === 'KeyS') this.row = (this.row + 1) % this.rows.length;
@@ -105,7 +108,7 @@ export class SettingsScene extends Phaser.Scene {
   private close(): void {
     sfx.play('ui');
     this.scene.stop();
-    if (this.back !== 'Pause' && this.back) this.scene.start(this.back);
+    if (this.back !== 'Pause' && this.back) this.scene.start(this.back, this.backData);
     else this.scene.resume('Pause');
   }
 }
@@ -149,7 +152,7 @@ export class PauseScene extends Phaser.Scene {
 
   create(): void {
     this.add.image(0, 0, ensureTexture(this, 'veil2', () => new PixelBuffer(320, 180).ditherFill(0, 0, 320, 180, C.ink, 13))).setOrigin(0, 0);
-    const { x, y } = frame(this, 120, 104, 'pause|frame');
+    const { x, y } = frame(this, 120, 140, 'pause|frame');
     addText(this, x + 10, y + 16, 'Paused', C.ink).setDepth(11);
     const battle = this.scene.get('Battle') as Phaser.Scene & { restart(): void };
     const bw = 100;
@@ -157,7 +160,9 @@ export class PauseScene extends Phaser.Scene {
       addButton(this, x + 10, y + 28, bw, 14, 'Resume', () => this.resume(), 'Esc'),
       addButton(this, x + 10, y + 45, bw, 14, t('ui.restart'), () => { this.scene.stop(); this.scene.resume('Battle'); battle.restart(); }),
       addButton(this, x + 10, y + 62, bw, 14, t('ui.settings'), () => { this.scene.pause(); this.scene.launch('Settings', { back: 'Pause', overlay: true }); }),
-      addButton(this, x + 10, y + 79, bw, 14, 'Quit to map', () => { const id = (battle as unknown as { level: { act: number } }).level.act; this.scene.stop('Battle'); this.scene.start('LevelSelect', { act: id }); }),
+      addButton(this, x + 10, y + 79, bw, 14, t('ui.codex'), () => { this.scene.pause(); this.scene.launch('Codex', { back: 'Pause' }); }),
+      addButton(this, x + 10, y + 96, bw, 14, t('ui.replayTutorial'), () => { sfx.play('select'); startTutorial(this); }),
+      addButton(this, x + 10, y + 113, bw, 14, 'Quit to map', () => { const id = (battle as unknown as { level: { act: number } }).level.act; this.scene.stop('Battle'); this.scene.start('LevelSelect', { act: id }); }),
     ];
     for (const b of items) b.img.setDepth(12);
     this.input.keyboard?.on('keydown', (e: KeyboardEvent) => { if (e.code === 'Escape' || e.code === 'KeyP') this.resume(); });
